@@ -90,7 +90,7 @@ export default function BikeGallery({ images, name }) {
             fetchPriority="high"
             decoding="async"
             alt={`${name} — foto ${active + 1} de ${count}`}
-            className="h-full w-full object-cover"
+            className="h-full w-full object-contain"
           />
         </button>
 

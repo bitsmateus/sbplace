@@ -211,7 +211,7 @@ function TypesSection({ tiles }) {
                   loading="lazy"
                   decoding="async"
                   alt=""
-                  className="absolute inset-0 h-full w-full object-cover transition duration-700 group-hover:scale-105"
+                  className="absolute inset-0 h-full w-full object-contain transition duration-700 group-hover:scale-105"
                 />
               ) : (
                 <BikePlaceholder className="absolute inset-x-0 top-8 mx-auto w-4/5 text-paper/10 transition group-hover:text-gold/30" />

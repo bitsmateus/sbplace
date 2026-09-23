@@ -62,7 +62,7 @@ export default function BikeCard({ bike, variant = "light", priority = false }) 
             fetchPriority={priority ? "high" : undefined}
             decoding="async"
             alt={bike.name}
-            className={`h-full w-full object-cover transition duration-500 group-hover:scale-105 ${
+            className={`h-full w-full object-contain transition duration-500 group-hover:scale-105 ${
               isSold ? "opacity-50 grayscale" : ""
             }`}
           />
