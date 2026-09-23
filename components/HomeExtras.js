@@ -1,5 +1,6 @@
 import VideoPlayer from "./VideoPlayer";
 import LocalVideo from "./LocalVideo";
+import PodcastShowcase from "./PodcastShowcase";
 import { whatsappLink } from "@/lib/site-config";
 import {
   PODCAST_EPISODES,
@@ -142,52 +143,26 @@ export function CafeSection() {
           </a>
         </div>
 
-        <div className="relative flex aspect-[4/3] items-center justify-center overflow-hidden rounded-xl bg-ink">
-          <div
-            aria-hidden
-            className="absolute -bottom-24 -right-16 h-80 w-80 rounded-full bg-gold/20 blur-3xl"
+        <div className="mx-auto w-full max-w-md md:max-w-none">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/cafe.webp"
+            srcSet="/cafe-480.webp 480w, /cafe.webp 960w"
+            sizes="(min-width: 768px) 560px, 90vw"
+            width={960}
+            height={1280}
+            decoding="async"
+            alt="Cafeteria dentro da SB Place, com balcão de granito preto, parede de tijolos e uma bike na parede"
+            loading="lazy"
+            className="aspect-[4/5] w-full rounded-2xl object-cover object-[50%_35%] shadow-2xl shadow-ink/15"
           />
-          <svg
-            viewBox="0 0 120 120"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="3"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            aria-hidden="true"
-            className="relative w-1/3 text-gold"
-          >
-            <path d="M22 44h62v26a22 22 0 0 1-22 22H44a22 22 0 0 1-22-22V44z" />
-            <path d="M84 52h8a10 10 0 0 1 0 20h-8" />
-            <path d="M40 30c0-6 6-6 6-12M56 30c0-6 6-6 6-12M72 30c0-6 6-6 6-12" />
-          </svg>
         </div>
       </div>
     </section>
   );
 }
 
-function PlayBadge() {
-  return (
-    <span
-      aria-hidden
-      className="absolute left-1/2 top-1/2 flex h-14 w-14 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-paper/90 text-ink opacity-90 transition group-hover:scale-110 group-hover:bg-paper"
-    >
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-        <path d="M8 5.5v13a1 1 0 0 0 1.5.86l10.5-6.5a1 1 0 0 0 0-1.72L9.5 4.64A1 1 0 0 0 8 5.5z" />
-      </svg>
-    </span>
-  );
-}
-
-function episodeLabel(ep) {
-  return `Episódio ${String(ep.number).padStart(2, "0")}`;
-}
-
 export function PodcastSection() {
-  const [latest, ...others] = PODCAST_EPISODES;
-  const href = (ep) => `https://www.youtube.com/watch?v=${ep.videoId}`;
-
   return (
     <section id="podcast" className="bg-ink py-14 text-paper md:py-28">
       <div className="container-page">
@@ -211,64 +186,7 @@ export function PodcastSection() {
           </a>
         </div>
 
-        <div className="grid gap-6 lg:grid-cols-[1.5fr_1fr] lg:gap-8">
-          <a
-            href={href(latest)}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="group block"
-          >
-            <div className="relative aspect-video overflow-hidden rounded-xl bg-ink-soft">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={latest.cover}
-                alt={`${episodeLabel(latest)}: ${latest.guest}`}
-                className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.03]"
-              />
-              <PlayBadge />
-            </div>
-            <p className="mt-4 text-xs font-semibold uppercase tracking-[0.2em] text-gold">
-              Mais recente · {episodeLabel(latest)} · {latest.duration}
-            </p>
-            <h3 className="mt-1 text-xl font-semibold md:text-2xl">
-              {latest.guest}
-            </h3>
-            {latest.role && <p className="text-mist">{latest.role}</p>}
-          </a>
-
-          <ul className="flex flex-col gap-5">
-            {others.map((ep) => (
-              <li key={ep.videoId}>
-                <a
-                  href={href(ep)}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="group flex gap-4"
-                >
-                  <div className="relative aspect-video w-[42%] shrink-0 overflow-hidden rounded-xl bg-ink-soft">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={ep.cover}
-                      alt={`${episodeLabel(ep)}: ${ep.guest}`}
-                      className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
-                    />
-                  </div>
-                  <div className="min-w-0 self-center">
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-gold">
-                      {episodeLabel(ep)} · {ep.duration}
-                    </p>
-                    <h3 className="mt-1 text-base font-semibold leading-snug md:text-lg">
-                      {ep.guest}
-                    </h3>
-                    {ep.role && (
-                      <p className="mt-0.5 text-sm text-mist">{ep.role}</p>
-                    )}
-                  </div>
-                </a>
-              </li>
-            ))}
-          </ul>
-        </div>
+        <PodcastShowcase episodes={PODCAST_EPISODES} />
       </div>
     </section>
   );

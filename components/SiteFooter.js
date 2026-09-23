@@ -25,11 +25,11 @@ export default function SiteFooter() {
           <h3 className="text-sm font-semibold uppercase tracking-[0.2em] text-gold">
             Navegação
           </h3>
-          <ul className="mt-5 space-y-3 text-sm text-mist">
+          <ul className="mt-3 text-sm text-mist">
             <li>
               <Link
                 href="/catalogo?condicao=nova"
-                className="transition hover:text-paper"
+                className="inline-flex min-h-11 items-center transition hover:text-paper"
               >
                 Bikes novas
               </Link>
@@ -37,18 +37,18 @@ export default function SiteFooter() {
             <li>
               <Link
                 href="/catalogo?condicao=seminova"
-                className="transition hover:text-paper"
+                className="inline-flex min-h-11 items-center transition hover:text-paper"
               >
                 Seminovas
               </Link>
             </li>
             <li>
-              <Link href="/catalogo" className="transition hover:text-paper">
+              <Link href="/catalogo" className="inline-flex min-h-11 items-center transition hover:text-paper">
                 Catálogo completo
               </Link>
             </li>
             <li>
-              <Link href="/contato" className="transition hover:text-paper">
+              <Link href="/contato" className="inline-flex min-h-11 items-center transition hover:text-paper">
                 Contato
               </Link>
             </li>
@@ -59,13 +59,13 @@ export default function SiteFooter() {
           <h3 className="text-sm font-semibold uppercase tracking-[0.2em] text-gold">
             Contato
           </h3>
-          <ul className="mt-5 space-y-3 text-sm text-mist">
+          <ul className="mt-3 text-sm text-mist">
             <li>
               <a
                 href={mapsLinkUrl(settings.addressLine)}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="transition hover:text-paper"
+                className="inline-flex min-h-11 items-center transition hover:text-paper"
               >
                 {fullAddress(settings.addressLine)}
               </a>
@@ -75,7 +75,7 @@ export default function SiteFooter() {
                 href={`https://instagram.com/${siteConfig.instagram}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="transition hover:text-paper"
+                className="inline-flex min-h-11 items-center transition hover:text-paper"
               >
                 @{siteConfig.instagram}
               </a>

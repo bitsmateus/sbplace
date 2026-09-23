@@ -2,6 +2,7 @@ import Link from "next/link";
 import { formatPrice, installmentText, CATEGORIES } from "@/lib/bike-constants";
 import StatusBadge from "./StatusBadge";
 import BikePlaceholder from "./BikePlaceholder";
+import { uploadImage } from "@/lib/uploads";
 
 // variant = fundo da seção onde o card está:
 //   "light" (branco), "bone" (cinza-areia) ou "dark" (preto)
@@ -32,7 +33,10 @@ const VARIANTS = {
   },
 };
 
-export default function BikeCard({ bike, variant = "light" }) {
+const CARD_SIZES = "(min-width: 1024px) 400px, (min-width: 640px) 50vw, 100vw";
+
+// priority = card na 1ª tela (carrega já); os demais só quando chegam perto.
+export default function BikeCard({ bike, variant = "light", priority = false }) {
   const v = VARIANTS[variant] || VARIANTS.light;
   const cover = bike.images?.[0];
   const condition = bike.condition || "nova";
@@ -50,7 +54,13 @@ export default function BikeCard({ bike, variant = "light" }) {
         {cover ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
-            src={`/uploads/${cover}`}
+            {...uploadImage(cover, [320, 480, 640, 800])}
+            sizes={CARD_SIZES}
+            width={640}
+            height={480}
+            loading={priority ? "eager" : "lazy"}
+            fetchPriority={priority ? "high" : undefined}
+            decoding="async"
             alt={bike.name}
             className={`h-full w-full object-cover transition duration-500 group-hover:scale-105 ${
               isSold ? "opacity-50 grayscale" : ""

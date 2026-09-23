@@ -56,6 +56,8 @@ export default function VideoPlayer({ videoId, title, cover, duration }) {
             // eslint-disable-next-line @next/next/no-img-element
             <img
               src={coverSrc}
+              loading="lazy"
+              decoding="async"
               alt=""
               onError={() => setCoverIdx((i) => i + 1)}
               className="absolute inset-0 h-full w-full object-cover transition duration-700 group-hover:scale-[1.03]"

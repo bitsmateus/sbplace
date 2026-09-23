@@ -1,8 +1,6 @@
 import { NextResponse } from "next/server";
-import fs from "node:fs";
-import path from "node:path";
 import { getBikeById, updateBike, deleteBike } from "@/lib/bikes";
-import { DATA_DIR } from "@/lib/db";
+import { removeUploadFile } from "@/lib/upload-files";
 
 export async function GET(request, { params }) {
   const { id } = await params;
@@ -20,6 +18,7 @@ export async function PUT(request, { params }) {
     return NextResponse.json({ error: "Dados inválidos." }, { status: 400 });
   }
 
+  const before = getBikeById(Number(id));
   const bike = updateBike(Number(id), {
     name: data.name,
     category: data.category,
@@ -42,6 +41,7 @@ export async function PUT(request, { params }) {
         ? Math.round(Number(data.priceCents) || 0)
         : undefined,
     description: data.description,
+    specs: data.specs,
     status: data.status,
     featured: data.featured !== undefined ? !!data.featured : undefined,
     images: Array.isArray(data.images) ? data.images : undefined,
@@ -52,6 +52,13 @@ export async function PUT(request, { params }) {
     return NextResponse.json({ error: "Não encontrada." }, { status: 404 });
   }
 
+  // apaga do disco as fotos que foram removidas desta bike
+  for (const img of before?.images || []) {
+    if (!bike.images.includes(img)) {
+      removeUploadFile(img);
+    }
+  }
+
   return NextResponse.json({ bike });
 }
 
@@ -60,10 +67,7 @@ export async function DELETE(request, { params }) {
   const bike = getBikeById(Number(id));
   if (bike) {
     // best-effort cleanup of the bike's uploaded images
-    for (const img of bike.images || []) {
-      const filePath = path.join(DATA_DIR, "uploads", img);
-      fs.unlink(filePath, () => {});
-    }
+    for (const img of bike.images || []) removeUploadFile(img);
   }
   deleteBike(Number(id));
   return NextResponse.json({ ok: true });

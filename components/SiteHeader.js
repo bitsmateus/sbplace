@@ -31,13 +31,13 @@ export default function SiteHeader() {
 
           <nav
             aria-label="Principal"
-            className="hidden items-center gap-7 text-[15px] font-medium lg:gap-9 md:flex"
+            className="hidden items-center gap-9 text-[15px] font-medium lg:flex"
           >
             {NAV_LINKS.map((link) => (
               <Link
                 key={link.href}
                 href={link.href}
-                className="transition hover:text-gold"
+                className="inline-flex min-h-11 items-center transition hover:text-gold"
               >
                 {link.label}
               </Link>

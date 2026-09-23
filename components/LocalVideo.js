@@ -29,7 +29,7 @@ export default function LocalVideo({
         // #t=0.1 faz o navegador mostrar um quadro real como capa
         src={poster ? src : `${src}#t=0.1`}
         poster={poster || undefined}
-        preload="metadata"
+        preload={poster ? "none" : "metadata"}
         playsInline
         controls={started}
         onEnded={() => setStarted(false)}

@@ -14,7 +14,7 @@ export default function LogoutButton() {
   return (
     <button
       onClick={handleLogout}
-      className="text-mist hover:text-paper"
+      className="inline-flex h-11 items-center rounded-full px-3 text-sm text-mist transition hover:text-paper sm:px-4"
     >
       Sair
     </button>

@@ -66,3 +66,9 @@ body {
     padding-right: 2rem;
   }
 }
+
+/* barra de progresso do episódio em destaque no podcast */
+@keyframes podcast-progress {
+  from { width: 0; }
+  to { width: 100%; }
+}

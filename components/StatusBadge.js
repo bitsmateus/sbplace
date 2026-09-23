@@ -2,12 +2,14 @@ const STYLES = {
   disponivel: "bg-paper text-ink",
   reservada: "bg-accent text-ink",
   vendida: "bg-ink text-mist border border-line",
+  oculta: "bg-amber-300 text-ink",
 };
 
 const LABELS = {
   disponivel: "Disponível",
   reservada: "Reservada",
   vendida: "Vendida",
+  oculta: "Oculta",
 };
 
 export default function StatusBadge({ status }) {

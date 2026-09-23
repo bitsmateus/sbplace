@@ -28,6 +28,7 @@ export async function POST(request) {
       Math.round(Number(data.installmentValueCents) || 0)
     ),
     description: data.description,
+    specs: data.specs,
     status: data.status,
     featured: !!data.featured,
     images: Array.isArray(data.images) ? data.images : [],

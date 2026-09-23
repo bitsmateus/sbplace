@@ -12,6 +12,7 @@ import {
   mapsLinkUrl,
 } from "@/lib/site-config";
 import { getSettings } from "@/lib/settings";
+import { uploadImage } from "@/lib/uploads";
 import {
   HistorySection,
   BikeFitSection,
@@ -29,8 +30,6 @@ export default function HomePage() {
   const novas = listBikes({ onlyPublic: true, condition: "nova" });
   const seminovas = listBikes({ onlyPublic: true, condition: "seminova" });
 
-  // Foto de fundo do hero: a bike em destaque (ou a primeira com foto).
-  const heroBike = [...novas, ...seminovas].find((b) => b.images?.length > 0);
 
   const tiles = [
     {
@@ -63,7 +62,7 @@ export default function HomePage() {
     <>
       <SiteHeader />
       <main className="flex-1">
-        <Hero cover={heroBike?.images?.[0]} />
+        <Hero />
         <HistorySection />
         <TypesSection tiles={tiles} />
         <NewBikesSection bikes={novas.slice(0, 4)} />
@@ -104,55 +103,74 @@ function SectionHead({ title, children, tone = "light" }) {
   );
 }
 
-function Hero({ cover }) {
+function Hero() {
   return (
-    <section className="relative flex min-h-[600px] items-end overflow-hidden bg-ink text-paper md:min-h-[720px]">
-      {cover ? (
-        // eslint-disable-next-line @next/next/no-img-element
+    <section className="relative overflow-hidden bg-ink text-paper">
+      {/* Capa: no celular/tablet aparece inteira acima do texto; no desktop fica à
+          direita, inteira (sem cortar a fachada), e o lado esquerdo — que na foto
+          já é escuro — se funde com o fundo para receber o texto. */}
+      <div className="relative lg:absolute lg:inset-0">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
-          src={`/uploads/${cover}`}
-          alt=""
-          className="absolute inset-0 h-full w-full object-cover"
+          src="/hero.webp"
+          srcSet="/hero-800.webp 800w, /hero.webp 1672w"
+          sizes="100vw"
+          width={1672}
+          height={941}
+          decoding="async"
+          alt="Mountain bike elétrica S-Works em frente à fachada da SB Place, revenda autorizada Specialized"
+          fetchPriority="high"
+          className="block aspect-video w-full object-cover lg:aspect-auto lg:h-full lg:object-contain lg:object-right"
         />
-      ) : (
-        <>
-          <div
-            aria-hidden
-            className="absolute inset-0 bg-gradient-to-br from-[#1c1c1c] via-ink to-ink"
-          />
-          <BikePlaceholder className="absolute -right-10 top-1/2 hidden w-[60%] -translate-y-1/2 text-paper/[0.06] md:block" />
-        </>
-      )}
-      {/* escurece a foto para o texto ficar legível */}
-      <div
-        aria-hidden
-        className="absolute inset-0 bg-gradient-to-t from-ink via-ink/60 to-ink/10"
-      />
+        {/* transição para o texto (celular) */}
+        <div
+          aria-hidden
+          className="absolute inset-0 bg-gradient-to-t from-ink via-transparent to-transparent lg:hidden"
+        />
+        {/* bordas suaves da foto (desktop) */}
+        <div
+          aria-hidden
+          className="absolute inset-y-0 left-0 hidden w-[55%] bg-gradient-to-r from-ink via-ink/80 to-transparent lg:block"
+        />
+        <div
+          aria-hidden
+          className="absolute inset-x-0 top-0 hidden h-16 bg-gradient-to-b from-ink to-transparent lg:block"
+        />
+        <div
+          aria-hidden
+          className="absolute inset-x-0 bottom-0 hidden h-16 bg-gradient-to-t from-ink to-transparent lg:block"
+        />
+      </div>
 
-      <div className="container-page relative">
-        <div className="flex flex-col gap-6 pb-10 pt-32 md:gap-8 md:pb-20 md:pt-40">
-          <h1 className="display text-5xl sm:text-7xl lg:text-[7.5rem]">
+      <div className="container-page relative flex items-center pb-12 pt-4 lg:h-[max(600px,min(calc(100svh_-_7.25rem),56.25vw))] lg:py-0">
+        <div className="flex max-w-[32rem] flex-col gap-5 md:gap-6">
+          <h1 className="display text-5xl sm:text-6xl lg:text-7xl">
             Sua próxima
             <br />
             Specialized.
           </h1>
-          <p className="max-w-2xl text-base text-[#D6D3CC] md:text-xl">
-            Revenda autorizada Specialized em Tubarão, SC. Bikes novas com nota
-            fiscal e garantia Specialized, vendidas na loja em Tubarão. Seminovas
-            de alto padrão revisadas e enviadas para todo o Brasil.
-          </p>
-          <div className="flex flex-col gap-3 sm:flex-row sm:gap-4">
+          <div className="flex flex-col gap-3">
+            <p className="text-lg font-medium leading-snug text-paper md:text-2xl">
+              Mais do que bicicletas, você encontra design e exclusividade em
+              cada produto.
+            </p>
+            <p className="text-base text-[#D6D3CC] md:text-lg">
+              SB Place, onde a inovação sobre duas rodas ganha o selo
+              Specialized.
+            </p>
+          </div>
+          <div className="mt-2 flex flex-col gap-3 sm:flex-row sm:gap-4">
             <a
               href={whatsappLink(WHATSAPP_HELLO)}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex h-12 items-center justify-center rounded-full bg-paper px-7 text-base font-semibold text-ink transition hover:bg-gold md:h-[52px]"
+              className="inline-flex h-12 items-center justify-center rounded-full bg-paper px-8 text-[15px] font-semibold text-ink transition hover:bg-gold md:h-[52px]"
             >
               Falar no WhatsApp
             </a>
             <Link
               href="/catalogo?condicao=seminova"
-              className="inline-flex h-12 items-center justify-center rounded-full border border-paper px-7 text-base font-semibold text-paper transition hover:bg-paper hover:text-ink md:h-[52px]"
+              className="inline-flex h-12 items-center justify-center rounded-full border border-paper/40 px-8 text-[15px] font-semibold text-paper transition hover:border-paper hover:bg-paper hover:text-ink md:h-[52px]"
             >
               Ver seminovas
             </Link>
@@ -172,7 +190,7 @@ function TypesSection({ tiles }) {
             href={`https://instagram.com/${siteConfig.instagram}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="shrink-0 pb-1 font-semibold underline decoration-gold decoration-2 underline-offset-[6px] transition hover:text-accent-dark"
+            className="inline-flex min-h-11 shrink-0 items-center font-semibold underline decoration-gold decoration-2 underline-offset-[6px] transition hover:text-accent-dark"
           >
             Todas as bikes disponíveis estão no Instagram
           </a>
@@ -188,7 +206,10 @@ function TypesSection({ tiles }) {
               {tile.cover ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
-                  src={`/uploads/${tile.cover}`}
+                  {...uploadImage(tile.cover, [320, 480, 640])}
+                  sizes="(min-width: 1024px) 300px, 50vw"
+                  loading="lazy"
+                  decoding="async"
                   alt=""
                   className="absolute inset-0 h-full w-full object-cover transition duration-700 group-hover:scale-105"
                 />
@@ -372,7 +393,7 @@ function StoreSection({ hours, addressLine }) {
             href={mapsLinkUrl(addressLine)}
             target="_blank"
             rel="noopener noreferrer"
-            className="w-fit font-semibold text-ink underline decoration-gold decoration-2 underline-offset-[6px] transition hover:text-accent-dark"
+            className="inline-flex min-h-11 w-fit items-center font-semibold text-ink underline decoration-gold decoration-2 underline-offset-[6px] transition hover:text-accent-dark"
           >
             Ver no mapa →
           </a>

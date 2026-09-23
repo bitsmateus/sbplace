@@ -80,7 +80,7 @@ export default function SettingsForm({ settings }) {
           Sobre a loja
         </label>
         <p className="mt-1 text-xs text-fog">
-          Aparece na home, na seção "Sobre a SB Place".
+          Aparece na home, na seção &quot;Sobre a SB Place&quot;.
         </p>
         <textarea
           value={about}
@@ -143,8 +143,8 @@ export default function SettingsForm({ settings }) {
           Horário de funcionamento
         </label>
         <p className="mt-1 text-xs text-fog">
-          Uma linha por período. Ex: "Segunda a sexta: 8h às 12h e 13h30 às
-          19h".
+          Uma linha por período. Ex: &quot;Segunda a sexta: 8h às 12h e 13h30 às
+          19h&quot;.
         </p>
         <textarea
           value={hours}
@@ -162,8 +162,8 @@ export default function SettingsForm({ settings }) {
           Diferenciais / serviços
         </label>
         <p className="mt-1 text-xs text-fog">
-          Aparecem como cards na home. Ex: "Manutenção", "Bike fit",
-          "Parcelamento".
+          Aparecem como cards na home. Ex: &quot;Manutenção&quot;, &quot;Bike fit&quot;,
+          &quot;Parcelamento&quot;.
         </p>
 
         <div className="mt-3 space-y-4">
@@ -193,7 +193,7 @@ export default function SettingsForm({ settings }) {
               <button
                 type="button"
                 onClick={() => removeDifferential(i)}
-                className="shrink-0 self-start px-2 py-1 text-xs text-accent hover:text-accent-dark"
+                className="inline-flex min-h-11 shrink-0 items-center self-start px-3 text-xs text-accent hover:text-accent-dark"
               >
                 remover
               </button>
@@ -204,7 +204,7 @@ export default function SettingsForm({ settings }) {
         <button
           type="button"
           onClick={addDifferential}
-          className="mt-3 text-sm text-mist hover:text-paper"
+          className="mt-3 inline-flex min-h-11 items-center text-sm text-mist hover:text-paper"
         >
           + Adicionar diferencial
         </button>

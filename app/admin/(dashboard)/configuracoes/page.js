@@ -8,7 +8,7 @@ export default function ConfiguracoesPage() {
 
   return (
     <div>
-      <h1 className="font-display text-2xl uppercase tracking-tight text-paper">
+      <h1 className="text-2xl font-semibold tracking-tight text-paper">
         Configurações da loja
       </h1>
       <p className="mt-2 max-w-lg text-sm text-mist">

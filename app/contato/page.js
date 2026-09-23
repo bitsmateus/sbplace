@@ -107,7 +107,7 @@ export default function ContatoPage() {
             href={mapsLinkUrl(settings.addressLine)}
             target="_blank"
             rel="noopener noreferrer"
-            className="mt-6 inline-block text-sm uppercase tracking-wide text-ink underline underline-offset-4 hover:text-accent-dark"
+            className="mt-4 inline-flex min-h-11 items-center text-sm uppercase tracking-wide text-ink underline underline-offset-4 hover:text-accent-dark"
           >
             Ver no mapa →
           </a>

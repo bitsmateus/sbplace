@@ -134,8 +134,8 @@ export default async function CatalogoPage({ searchParams }) {
               </p>
             ) : (
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:gap-6 lg:grid-cols-3">
-                {bikes.map((bike) => (
-                  <BikeCard key={bike.id} bike={bike} variant="light" />
+                {bikes.map((bike, i) => (
+                  <BikeCard key={bike.id} bike={bike} variant="light" priority={i < 2} />
                 ))}
               </div>
             )}

@@ -76,23 +76,60 @@ as fotos entre reinicializações.
 
 ## Como usar o painel (`/admin`)
 
-- **Nova bicicleta**: nome, categoria, preço, descrição, status
-  (Disponível / Reservada / Vendida) e fotos. A primeira foto da lista
-  vira a capa no catálogo — dá pra reordenar com as setinhas.
-- **Destaque**: marque a caixinha "Mostrar em destaque na home" pras
-  bicicletas que devem aparecer na página inicial.
-- **Editar/Excluir**: na lista de bicicletas, cada linha tem os links de
-  ação. Excluir também apaga as fotos daquela bicicleta do servidor.
-- **Marcar como vendida**: edite a bicicleta e mude o status — no site
-  ela continua visível no catálogo, mas com o selo "Vendida" e sem botão
-  de WhatsApp.
+**Lista de bicicletas** — abas *Todas / Novas / Seminovas* (com contagem), busca
+por nome, filtros por status e tipo e ordenação. Em cada linha dá para trocar a
+situação (Disponível, Reservada, Vendida, Oculta) e marcar o destaque (★) sem
+abrir a bike, além de **Editar**, **Ver no site**, **Duplicar** e **Excluir**.
+
+**Cadastrar / editar uma bike** — o formulário tem 5 seções:
+
+1. **Tipo e situação** — *Nova* (venda e retirada só na loja, até 12x) ou
+   *Seminova* (enviada para todo o Brasil, até 21x). Uma bike nova cadastrada
+   começa como **Oculta**: só aparece no site quando você muda a situação.
+2. **Informações** — nome, tipo (MTB, speed, e-bike…), resumo de uma linha e
+   descrição. Marque *destaque* para ela aparecer primeiro.
+3. **Preço e pagamento** — preço, preço à vista (opcional) e parcelamento
+   **calculado automaticamente**; dá para ajustar o nº de parcelas e/ou o valor
+   da parcela. Mostra ao vivo como fica no site.
+4. **Fotos** — várias de uma vez (botão ou arrastando), arrastar para
+   reordenar, *Definir capa* e remover. As fotos são otimizadas sozinhas (até
+   20 MB cada; viram WebP de no máx. 2000 px). Fotos removidas são apagadas do
+   servidor.
+5. **Ficha técnica** — lista editável de itens (tamanho do quadro, grupo,
+   suspensão, km rodados…), mostrada como tabela na página da bike.
+
+À direita há a **pré-visualização do card** como aparece no site e um
+*checklist* do que falta. A barra de baixo avisa de alterações não salvas.
+
+**Página da bike** (`/bicicletas/nome-da-bike`) — galeria com ampliação em tela
+cheia, preço, parcelamento, descrição, ficha técnica e bikes relacionadas. O
+botão *Tenho interesse* abre o WhatsApp com a mensagem *"Olá! Vim pelo site da
+SB Place e tenho interesse na bike (nome)"* + o link da página. Bikes
+**Ocultas** dão 404 até no link direto; **Vendidas** continuam visíveis, sem o
+botão de compra.
+
+**Configurações** — sobre a loja, diferenciais, endereço, horários, razão
+social e CNPJ (rodapé).
 
 ## Backup
 
-Todo o conteúdo que a loja cadastra vive dentro de `DATA_DIR`
-(`sbplace.db` + pasta `uploads/`). Faça backup periódico dessa pasta —
-no EasyPanel, isso significa fazer backup do volume montado em
-`/app/data`.
+Todo o conteúdo que a loja cadastra vive dentro de `DATA_DIR`:
+
+- `sbplace.json` — bicicletas e configurações;
+- `uploads/` — as fotos originais (já otimizadas no envio);
+- `cache/` — versões redimensionadas das fotos, geradas sozinhas quando o site
+  precisa. **Não precisa entrar no backup** (é recriada) e pode ser apagada.
+
+No EasyPanel, faça backup do volume montado em `/app/data`.
+
+## Desempenho
+
+- As fotos das bikes são entregues em vários tamanhos (`/uploads/arquivo.webp?w=480`)
+  e o navegador escolhe o certo para a tela; celulares baixam bem menos dados.
+- Imagens abaixo da 1ª tela só carregam quando ficam perto de aparecer.
+- O vídeo do bike fit só baixa depois do clique (tem uma capa própria).
+- Imagens e vídeos fixos do site (`public/`) têm cache de 1 dia no navegador.
+- Ao trocar uma imagem de `public/`, mantenha o formato WebP e o mesmo nome.
 
 ## Estrutura do projeto
 
