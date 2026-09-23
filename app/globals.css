@@ -1,0 +1,68 @@
+@import "tailwindcss";
+
+@theme {
+  --color-ink: #0a0a0a;
+  --color-ink-soft: #141414;
+  --color-paper: #ffffff;
+  --color-mist: #b8b8b8;
+  --color-fog: #6e6e6e;
+  --color-line: #262626;
+  --color-accent: #ff4d23;
+  --color-accent-dark: #d63c17;
+
+  /* Cor secundária (dourado): preços, selo de seminova e detalhes.
+     Bom contraste só sobre fundo escuro — em fundo claro use como fundo de selo. */
+  --color-gold: #CDAA5E;
+
+  /* Tema claro do site público */
+  --color-bone: #f3f3f0;
+  --color-stone: #5a5a57;
+  --color-hairline: #e4e4df;
+
+  --font-display: "Oswald", "Arial Narrow", sans-serif;
+  --font-sans: "Inter", system-ui, sans-serif;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: var(--color-paper);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+}
+
+/* Títulos do site público: Inter semibold, sentence case, tracking fechado. */
+.display {
+  font-family: var(--font-sans);
+  font-weight: 600;
+  letter-spacing: -0.035em;
+  line-height: 1.02;
+  text-wrap: balance;
+}
+
+.font-display {
+  font-family: var(--font-display);
+}
+
+::selection {
+  background-color: var(--color-accent);
+  color: var(--color-ink);
+}
+
+.container-page {
+  width: 100%;
+  max-width: 1200px;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 1.25rem;
+  padding-right: 1.25rem;
+}
+
+@media (min-width: 768px) {
+  .container-page {
+    padding-left: 2rem;
+    padding-right: 2rem;
+  }
+}

@@ -1,0 +1,12 @@
+node_modules
+.next
+data
+.git
+.gitignore
+*.log
+npm-debug.log*
+.env
+.env.local
+README.md
+AGENTS.md
+CLAUDE.md
