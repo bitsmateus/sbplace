@@ -3,6 +3,7 @@ import "@fontsource/inter/500.css";
 import "@fontsource/inter/600.css";
 import "@fontsource/inter/700.css";
 import "./globals.css";
+import FloatingWhatsApp from "@/components/FloatingWhatsApp";
 
 export const metadata = {
   title: "SB Place | Revenda Specialized em Tubarão, SC",
@@ -15,6 +16,7 @@ export default function RootLayout({ children }) {
     <html lang="pt-BR" className="h-full">
       <body className="min-h-full flex flex-col bg-paper text-ink antialiased">
         {children}
+        <FloatingWhatsApp />
       </body>
     </html>
   );

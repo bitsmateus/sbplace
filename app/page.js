@@ -19,6 +19,7 @@ import {
   CafeSection,
   PodcastSection,
 } from "@/components/HomeExtras";
+import MetaPixel from "@/components/MetaPixel";
 
 export const dynamic = "force-dynamic";
 
@@ -60,6 +61,7 @@ export default function HomePage() {
 
   return (
     <>
+      <MetaPixel />
       <SiteHeader />
       <main className="flex-1">
         <Hero />
