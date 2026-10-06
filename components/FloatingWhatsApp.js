@@ -6,13 +6,20 @@ import { whatsappLink } from "@/lib/site-config";
 const MESSAGE =
   "Olá! Vim pelo site da SB Place e gostaria de falar sobre bicicletas.";
 
-// Botão flutuante de WhatsApp, visível em todo o site público.
-// Escondido em /admin (tem sua própria navegação) e na página de cada bike
-// (que já tem um botão de compra fixo, para não duplicar o CTA).
+// Botão flutuante de WhatsApp, visível em todas as páginas. Em duas telas
+// existe uma barra fixa na parte de baixo (salvar bike no admin; comprar na
+// página da bike, só no celular) — nelas o botão sobe para não tampar o
+// outro botão.
 export default function FloatingWhatsApp() {
   const pathname = usePathname();
-  const hidden = pathname.startsWith("/admin") || pathname.startsWith("/bicicletas/");
-  if (hidden) return null;
+  const aboveAdminBar = pathname.startsWith("/admin/bicicletas/");
+  const aboveBuyBar = pathname.startsWith("/bicicletas/");
+
+  const position = aboveAdminBar
+    ? "bottom-24 md:bottom-24"
+    : aboveBuyBar
+      ? "bottom-24 md:bottom-6"
+      : "bottom-5 md:bottom-6";
 
   return (
     <a
@@ -20,7 +27,7 @@ export default function FloatingWhatsApp() {
       target="_blank"
       rel="noopener noreferrer"
       aria-label="Falar no WhatsApp"
-      className="fixed bottom-5 right-5 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-[#25D366] text-white shadow-lg shadow-black/25 transition hover:scale-105 hover:bg-[#1ebe5a] md:bottom-6 md:right-6"
+      className={`fixed right-5 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-[#25D366] text-white shadow-lg shadow-black/25 transition hover:scale-105 hover:bg-[#1ebe5a] md:right-6 ${position}`}
     >
       <span
         aria-hidden

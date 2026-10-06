@@ -7,9 +7,8 @@ const PIXEL_ID = "2298809294201137";
 // Carregado com next/script (estratégia "afterInteractive"): o script oficial
 // recomenda <head>, mas essa estratégia é a indicada pelo Next.js para
 // scripts de analytics/ads — ele baixa logo após a página ficar interativa,
-// sem atrasar a primeira renderização. Hoje só na home, a pedido do cliente;
-// para medir visitas no catálogo/contato também, basta repetir <MetaPixel />
-// nessas páginas (o próprio script evita se inicializar duas vezes).
+// sem atrasar a primeira renderização. Renderizado uma vez no layout raiz
+// (app/layout.js), então vale para todas as páginas do site, inclusive /admin.
 export default function MetaPixel() {
   return (
     <>
