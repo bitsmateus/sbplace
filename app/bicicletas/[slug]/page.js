@@ -6,6 +6,7 @@ import SiteFooter from "@/components/SiteFooter";
 import StatusBadge from "@/components/StatusBadge";
 import BikeGallery from "@/components/BikeGallery";
 import BikeCard from "@/components/BikeCard";
+import PrazoEntrega from "@/components/PrazoEntrega";
 import { getBikeBySlug, listRelatedBikes } from "@/lib/bikes";
 import { formatPrice, installmentText, CATEGORIES } from "@/lib/bike-constants";
 import { bikeWhatsappLink } from "@/lib/site-config";
@@ -150,6 +151,9 @@ export default async function BikeDetailPage({ params }) {
                 </p>
               )}
             </div>
+
+            {/* Seminovas são enviadas para todo o Brasil: o cliente vê o prazo pelo CEP */}
+            {isUsed && !isSold && <PrazoEntrega bikeName={bike.name} pageUrl={pageUrl} />}
 
             <ul className="mt-8 flex flex-col gap-2.5 text-[15px] text-ink">
               {terms.map((t) => (
