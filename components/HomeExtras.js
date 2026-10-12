@@ -5,7 +5,6 @@ import { whatsappLink } from "@/lib/site-config";
 import {
   PODCAST_EPISODES,
   YOUTUBE_CHANNEL,
-  CAFE,
   HISTORY_VIDEO,
   BIKEFIT_VIDEO,
 } from "@/lib/site-content";
@@ -128,19 +127,15 @@ export function CafeSection() {
             Não é só uma loja de bicicletas.
           </h2>
           <p className="max-w-lg text-base leading-relaxed text-stone md:text-lg">
-            A <strong className="font-semibold text-ink">{CAFE.name}</strong>{" "}
-            funciona anexa à SB Place. Tome um bom café com os amigos enquanto
-            a equipe faz um ajuste na sua bike, e aproveite para marcar o pedal
-            do fim de semana.
+            A SB Place tem um{" "}
+            <strong className="font-semibold text-ink">café</strong> e um{" "}
+            <strong className="font-semibold text-ink">
+              centro de experiência
+            </strong>{" "}
+            para reunir todos os ciclistas. Tome um bom café com os amigos
+            enquanto a equipe faz um ajuste na sua bike, e aproveite para marcar
+            o pedal do fim de semana.
           </p>
-          <a
-            href={`https://instagram.com/${CAFE.instagram}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="mt-2 inline-flex h-12 w-full items-center justify-center rounded-full border border-ink px-8 text-[15px] font-semibold text-ink transition hover:bg-ink hover:text-paper sm:w-auto md:h-[52px]"
-          >
-            @{CAFE.instagram}
-          </a>
         </div>
 
         <div className="mx-auto w-full max-w-md md:max-w-none">
