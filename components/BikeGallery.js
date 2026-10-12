@@ -1,9 +1,12 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import BikePlaceholder from "./BikePlaceholder";
+import CoresDaBike from "./CoresDaBike";
+import { useCorDaBike } from "./CorDaBike";
 import { uploadImage, uploadUrl } from "@/lib/uploads";
+import { fotoDaCor } from "@/lib/cores-specialized";
 
 function Arrow({ dir, onClick, className = "" }) {
   return (
@@ -20,12 +23,38 @@ function Arrow({ dir, onClick, className = "" }) {
   );
 }
 
+// Uma foto da galeria pode ser da loja (enviada no admin) ou a foto oficial
+// daquela cor, no site da Specialized.
+function src(item, largura) {
+  return item.loja ? uploadUrl(item.ref, largura) : fotoDaCor(item.ref, largura);
+}
+
+function imgProps(item, larguras) {
+  if (item.loja) return uploadImage(item.ref, larguras);
+  const ordenadas = [...larguras].sort((a, b) => a - b);
+  return {
+    src: src(item, ordenadas[Math.floor(ordenadas.length / 2)]),
+    srcSet: ordenadas.map((w) => `${src(item, w)} ${w}w`).join(", "),
+  };
+}
+
 // Galeria da página da bike: foto grande, miniaturas, setas e ampliação em
 // tela cheia (clique na foto). Setas do teclado, Esc e deslizar no celular.
-export default function BikeGallery({ images, name }) {
-  const list = images || [];
+// Nas bikes novas vêm também as bolinhas de cor: cada cor tem a sua foto.
+export default function BikeGallery({ images, name, cores = [] }) {
+  const { setCor } = useCorDaBike();
+
+  const list = useMemo(() => {
+    const daLoja = (images || []).map((ref) => ({ loja: true, ref }));
+    const daCor = (cores || [])
+      .map((cor, i) => (cor.foto ? { loja: false, ref: cor.foto, cor: i } : null))
+      .filter(Boolean);
+    return [...daLoja, ...daCor];
+  }, [images, cores]);
+
   const count = list.length;
   const [active, setActive] = useState(0);
+  const [corEscolhida, setCorEscolhida] = useState(0);
   const [open, setOpen] = useState(false);
   const closeRef = useRef(null);
   const touchX = useRef(null);
@@ -34,6 +63,20 @@ export default function BikeGallery({ images, name }) {
     (delta) => setActive((i) => (count ? (i + delta + count) % count : 0)),
     [count]
   );
+
+  // A bolinha marcada é a da foto que está na tela; nas fotos da loja, que
+  // não são de uma cor só, vale a última bolinha clicada.
+  const corAtiva = list[active]?.cor ?? corEscolhida;
+
+  useEffect(() => {
+    if (cores.length) setCor(cores[corAtiva] || cores[0] || null);
+  }, [corAtiva, cores, setCor]);
+
+  function escolherCor(i) {
+    setCorEscolhida(i);
+    const alvo = list.findIndex((item) => item.cor === i);
+    if (alvo > -1) setActive(alvo);
+  }
 
   useEffect(() => {
     if (!open) return;
@@ -83,7 +126,7 @@ export default function BikeGallery({ images, name }) {
         >
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            {...uploadImage(list[active], [640, 800, 1200])}
+            {...imgProps(list[active], [640, 800, 1200])}
             sizes="(min-width: 768px) 540px, 100vw"
             width={1200}
             height={1200}
@@ -105,11 +148,13 @@ export default function BikeGallery({ images, name }) {
         )}
       </div>
 
+      <CoresDaBike cores={cores} ativa={corAtiva} onEscolher={escolherCor} />
+
       {count > 1 && (
         <div className="mt-3 grid grid-cols-5 gap-2 md:gap-3">
-          {list.map((img, i) => (
+          {list.map((item, i) => (
             <button
-              key={img + i}
+              key={item.ref + i}
               type="button"
               onClick={() => setActive(i)}
               aria-label={`Ver foto ${i + 1}`}
@@ -120,14 +165,14 @@ export default function BikeGallery({ images, name }) {
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-                src={uploadUrl(img, 160)}
-                srcSet={`${uploadUrl(img, 160)} 1x, ${uploadUrl(img, 320)} 2x`}
+                src={src(item, 160)}
+                srcSet={`${src(item, 160)} 1x, ${src(item, 320)} 2x`}
                 width={160}
                 height={160}
                 alt=""
                 loading="lazy"
                 decoding="async"
-                className="h-full w-full object-cover"
+                className={`h-full w-full ${item.loja ? "object-cover" : "object-contain"}`}
               />
             </button>
           ))}
@@ -164,7 +209,7 @@ export default function BikeGallery({ images, name }) {
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              src={uploadUrl(list[active], 1600)}
+              src={src(list[active], 1600)}
               alt={`${name} — foto ${active + 1} de ${count}`}
               className="max-h-full max-w-full object-contain"
               onClick={(e) => e.stopPropagation()}
@@ -183,9 +228,9 @@ export default function BikeGallery({ images, name }) {
 
           {count > 1 && (
             <div className="flex justify-center gap-2 overflow-x-auto px-4 py-4" onClick={(e) => e.stopPropagation()}>
-              {list.map((img, i) => (
+              {list.map((item, i) => (
                 <button
-                  key={img + i}
+                  key={item.ref + i}
                   type="button"
                   onClick={() => setActive(i)}
                   aria-label={`Ver foto ${i + 1}`}
@@ -194,7 +239,7 @@ export default function BikeGallery({ images, name }) {
                   }`}
                 >
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={uploadUrl(img, 160)} alt="" className="h-full w-full object-cover" />
+                  <img src={src(item, 160)} alt="" className={`h-full w-full ${item.loja ? "object-cover" : "object-contain"}`} />
                 </button>
               ))}
             </div>
