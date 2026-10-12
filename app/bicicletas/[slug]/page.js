@@ -7,9 +7,11 @@ import StatusBadge from "@/components/StatusBadge";
 import BikeGallery from "@/components/BikeGallery";
 import BikeCard from "@/components/BikeCard";
 import PrazoEntrega from "@/components/PrazoEntrega";
+import BikeComprar from "@/components/BikeComprar";
+import { CorDaBikeProvider } from "@/components/CorDaBike";
 import { getBikeBySlug, listRelatedBikes } from "@/lib/bikes";
 import { formatPrice, installmentText, CATEGORIES } from "@/lib/bike-constants";
-import { bikeWhatsappLink } from "@/lib/site-config";
+import { coresDoModelo } from "@/lib/cores-specialized";
 
 export const dynamic = "force-dynamic";
 
@@ -52,7 +54,9 @@ export default async function BikeDetailPage({ params }) {
   const showStatus = bike.status && bike.status !== "disponivel";
   const specs = bike.specs || [];
   const related = listRelatedBikes(bike, 3);
-  const whatsappHref = bikeWhatsappLink(bike, pageUrl);
+  // Bike nova: as cores de fábrica do modelo (bolinhas na galeria). Seminova
+  // tem só a cor dela, então não entra.
+  const cores = !isUsed && !isSold ? coresDoModelo(bike.name) : [];
 
   const terms = isUsed
     ? [
@@ -88,7 +92,7 @@ export default async function BikeDetailPage({ params }) {
   };
 
   return (
-    <>
+    <CorDaBikeProvider>
       <SiteHeader />
       <main className="flex-1">
         <div className="container-page py-6 md:py-8">
@@ -108,7 +112,7 @@ export default async function BikeDetailPage({ params }) {
 
         <section className="container-page grid gap-8 pb-28 md:grid-cols-2 md:gap-14 md:pb-20">
           <div className="md:sticky md:top-28 md:self-start">
-            <BikeGallery images={bike.images} name={bike.name} />
+            <BikeGallery images={bike.images} name={bike.name} cores={cores} />
           </div>
 
           <div>
@@ -144,7 +148,7 @@ export default async function BikeDetailPage({ params }) {
             </div>
 
             <div className="mt-6 hidden md:block">
-              <BuyButton href={whatsappHref} isSold={isSold} />
+              <BikeComprar bikeName={bike.name} pageUrl={pageUrl} isSold={isSold} />
               {!isSold && (
                 <p className="mt-3 text-sm text-stone">
                   Você fala direto com a equipe da SB Place pelo WhatsApp.
@@ -214,7 +218,7 @@ export default async function BikeDetailPage({ params }) {
 
       {/* No celular o botão de compra fica fixo no rodapé da tela */}
       <div className="fixed inset-x-0 bottom-0 z-30 border-t border-hairline bg-paper/95 p-3 backdrop-blur md:hidden">
-        <BuyButton href={whatsappHref} isSold={isSold} full />
+        <BikeComprar bikeName={bike.name} pageUrl={pageUrl} isSold={isSold} full />
       </div>
 
       <script
@@ -222,35 +226,6 @@ export default async function BikeDetailPage({ params }) {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
       <SiteFooter />
-    </>
-  );
-}
-
-function BuyButton({ href, isSold, full }) {
-  if (isSold) {
-    return (
-      <span
-        className={`inline-flex h-12 items-center justify-center rounded-full border border-hairline px-7 font-semibold text-stone ${
-          full ? "w-full" : ""
-        }`}
-      >
-        Bicicleta vendida
-      </span>
-    );
-  }
-  return (
-    <a
-      href={href}
-      target="_blank"
-      rel="noopener noreferrer"
-      className={`inline-flex h-12 items-center justify-center gap-2 rounded-full bg-ink px-8 font-semibold text-paper transition hover:bg-accent hover:text-ink md:h-[52px] ${
-        full ? "w-full" : ""
-      }`}
-    >
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-        <path d="M12.04 2a9.9 9.9 0 0 0-8.4 15.1L2 22l5-1.6A9.9 9.9 0 1 0 12.04 2zm0 1.8a8.1 8.1 0 1 1-4.2 15l-.3-.2-2.9.9.9-2.8-.2-.3a8.1 8.1 0 0 1 6.7-12.6zm-3 4.1c-.2 0-.5 0-.7.3-.3.3-.9.9-.9 2.1s.9 2.4 1 2.6c.1.2 1.8 2.8 4.4 3.9 2.2.9 2.6.7 3.1.7.5 0 1.5-.6 1.7-1.2.2-.6.2-1.1.2-1.2-.1-.1-.3-.2-.6-.4-.3-.1-1.5-.7-1.7-.8-.2-.1-.4-.1-.6.1-.2.3-.7.8-.8 1-.2.2-.3.2-.6.1-.3-.1-1.1-.4-2.1-1.3-.8-.7-1.3-1.5-1.4-1.8-.2-.3 0-.4.1-.5l.4-.5c.1-.1.2-.3.3-.4.1-.2 0-.3 0-.5-.1-.1-.6-1.5-.9-2-.2-.5-.4-.5-.6-.5z" />
-      </svg>
-      Tenho interesse — WhatsApp
-    </a>
+    </CorDaBikeProvider>
   );
 }
