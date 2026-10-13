@@ -106,6 +106,19 @@ export default function SiteFooter() {
             </p>
           )}
         </div>
+        <div className="container-page mt-3 text-xs text-fog">
+          <p>
+            Desenvolvido por{" "}
+            <a
+              href="https://www.instagram.com/gruponxdigital/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-semibold text-gold transition hover:text-paper"
+            >
+              @Gruponxdigital
+            </a>
+          </p>
+        </div>
       </div>
     </footer>
   );
