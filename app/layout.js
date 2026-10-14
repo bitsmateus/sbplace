@@ -5,6 +5,7 @@ import "@fontsource/inter/700.css";
 import "./globals.css";
 import FloatingWhatsApp from "@/components/FloatingWhatsApp";
 import MetaPixel from "@/components/MetaPixel";
+import OrigemTrafego from "@/components/OrigemTrafego";
 
 export const metadata = {
   title: "SB Place | Revenda Specialized em Tubarão, SC",
@@ -17,6 +18,7 @@ export default function RootLayout({ children }) {
     <html lang="pt-BR" className="h-full">
       <body className="min-h-full flex flex-col bg-paper text-ink antialiased">
         <MetaPixel />
+        <OrigemTrafego />
         {children}
         <FloatingWhatsApp />
       </body>
