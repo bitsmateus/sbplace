@@ -7,6 +7,10 @@ import { useEffect } from "react";
 // 30 dias. Ao clicar em qualquer botão de WhatsApp do site, essa origem vai
 // no fim da mensagem, ex.: "(ref leads-site-whatsapp)". O NX lê esse texto
 // e aplica a etiqueta da campanha no contato automaticamente.
+//
+// Todo clique num botão de WhatsApp também dispara o evento "Lead" do Meta
+// Pixel. É esse evento que a campanha "LEADS SITE" usa para medir e otimizar,
+// e é ele que aparece na coluna de leads do Gerenciador, separado por anúncio.
 const CHAVE = "sbp_origem";
 const VALIDADE_MS = 30 * 24 * 60 * 60 * 1000;
 
@@ -31,12 +35,18 @@ function lerOrigem() {
 function salvarOrigemDaUrl() {
   const params = new URLSearchParams(window.location.search);
   const campanha = params.get("utm_campaign");
+  const anuncio = params.get("utm_content") || "";
   const fonte = params.get("utm_source") || "";
   const veioDoMeta =
     params.has("fbclid") || /facebook|instagram|meta|^fb|^ig/i.test(fonte);
   if (!campanha && !veioDoMeta) return;
   // Vale o último anúncio clicado: é ele que trouxe a pessoa desta vez.
-  const origem = { c: campanha ? slug(campanha) : "", meta: veioDoMeta, t: Date.now() };
+  const origem = {
+    c: campanha ? slug(campanha) : "",
+    a: anuncio ? slug(anuncio) : "",
+    meta: veioDoMeta,
+    t: Date.now(),
+  };
   try {
     localStorage.setItem(CHAVE, JSON.stringify(origem));
   } catch {}
@@ -44,9 +54,22 @@ function salvarOrigemDaUrl() {
 
 function referencia(origem) {
   if (!origem) return null;
+  if (origem.c && origem.a) return `ref ${origem.c} ${origem.a}`;
   if (origem.c) return `ref ${origem.c}`;
   if (origem.meta) return "ref meta";
   return null;
+}
+
+// Conta o clique no WhatsApp como Lead no Meta Pixel. O Meta liga o evento
+// ao anúncio que trouxe a pessoa, então o número sai por anúncio sem
+// precisar perguntar para a equipe.
+function registrarLead(ref) {
+  if (typeof window.fbq !== "function") return;
+  window.fbq("track", "Lead", {
+    content_name: "Clique no WhatsApp",
+    origem: ref ? ref.replace(/^ref /, "") : "direto",
+    pagina: window.location.pathname,
+  });
 }
 
 export default function OrigemTrafego() {
@@ -60,6 +83,7 @@ export default function OrigemTrafego() {
       const link = evento.target.closest?.('a[href*="wa.me/"]');
       if (!link) return;
       const ref = referencia(lerOrigem());
+      registrarLead(ref);
       if (!ref) return;
       const url = new URL(link.href);
       const texto = url.searchParams.get("text") || "";
