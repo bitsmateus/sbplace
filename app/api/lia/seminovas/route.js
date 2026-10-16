@@ -253,14 +253,21 @@ function serveAltura(faixa, alturaCm) {
 
 // ---------- montagem da resposta ----------
 
+// Primeiro rótulo que existir na ficha, na ordem pedida ("Tamanho" antes de
+// "Quadro", por exemplo — "Quadro" na ficha costuma ser o material, não o tamanho).
 function spec(bike, ...rotulos) {
-  const procurados = rotulos.map(normalizar);
-  const item = (bike.specs || []).find((s) => procurados.includes(normalizar(s.label)));
-  return item ? item.value : "";
+  const specs = bike.specs || [];
+  for (const rotulo of rotulos) {
+    const item = specs.find((s) => normalizar(s.label) === normalizar(rotulo));
+    if (item && item.value) return item.value;
+  }
+  return "";
 }
 
 function tamanhoDaBike(bike) {
-  return spec(bike, "Tamanho do quadro", "Tamanho", "Quadro") || bike.subtitle || "";
+  const daFicha = spec(bike, "Tamanho do quadro", "Tamanho", "Tam.", "Tam");
+  const doSubtitulo = String(bike.subtitle || "").replace(/^tamanho\s*:?\s*/i, "");
+  return daFicha || doSubtitulo;
 }
 
 function baseDoSite(request) {
