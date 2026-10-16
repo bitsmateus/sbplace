@@ -2,17 +2,29 @@
 
 import { useEffect } from "react";
 
-// Rastreio de origem do tráfego pago. Quando a pessoa chega no site por um
-// anúncio (link com utm_campaign ou fbclid), guardamos de onde ela veio por
-// 30 dias. Ao clicar em qualquer botão de WhatsApp do site, essa origem vai
-// no fim da mensagem, ex.: "(ref leads-site-whatsapp)". O NX lê esse texto
-// e aplica a etiqueta da campanha no contato automaticamente.
+// Rastreio de origem dos contatos que saem do site para o WhatsApp.
+//
+// Todo clique em botão de WhatsApp do site acrescenta uma linha no fim da
+// mensagem, ex.: "(ref leads-site-whatsapp | bike-tarmac-sl7)".
+// A primeira parte diz DE ONDE a pessoa veio e a segunda EM QUE PÁGINA (ou em
+// que botão) ela clicou:
+//
+//   (ref leads-site-whatsapp ad01 | home)  -> veio de anúncio da Meta
+//   (ref site | bikefit)                   -> veio direto/orgânico, botão do bike fit
+//   (ref meta | catalogo-seminova)         -> veio do Meta sem utm_campaign
+//
+// Quando a pessoa chega por um anúncio (link com utm_campaign ou fbclid), essa
+// origem fica guardada por 30 dias, então ela vale mesmo que o contato aconteça
+// alguns dias depois. Sem anúncio nenhum, a origem é "site" — assim nenhum
+// contato chega sem identificação. O NX lê esse texto e aplica a etiqueta no
+// contato automaticamente.
 //
 // Todo clique num botão de WhatsApp também dispara o evento "Lead" do Meta
 // Pixel. É esse evento que a campanha "LEADS SITE" usa para medir e otimizar,
 // e é ele que aparece na coluna de leads do Gerenciador, separado por anúncio.
 const CHAVE = "sbp_origem";
 const VALIDADE_MS = 30 * 24 * 60 * 60 * 1000;
+const ORIGEM_PADRAO = "site";
 
 function slug(texto) {
   return texto
@@ -52,22 +64,47 @@ function salvarOrigemDaUrl() {
   } catch {}
 }
 
-function referencia(origem) {
-  if (!origem) return null;
-  if (origem.c && origem.a) return `ref ${origem.c} ${origem.a}`;
-  if (origem.c) return `ref ${origem.c}`;
-  if (origem.meta) return "ref meta";
-  return null;
+// De onde a pessoa veio. Sem anúncio guardado, o contato é do próprio site.
+function deOndeVeio(origem) {
+  if (origem) {
+    if (origem.c && origem.a) return `${origem.c} ${origem.a}`;
+    if (origem.c) return origem.c;
+    if (origem.meta) return "meta";
+  }
+  return ORIGEM_PADRAO;
+}
+
+// Onde ela clicou: a página mais, quando o botão diz quem é com data-ref
+// (ex.: data-ref="bikefit"), o nome do botão — "home-bikefit",
+// "bike-turbo-levo-4-comprar", "catalogo-seminova-flutuante".
+function paginaAtual() {
+  const caminho = window.location.pathname.replace(/\/+$/, "");
+  if (!caminho) return "home";
+  if (caminho.startsWith("/bicicletas/")) {
+    return `bike-${slug(caminho.slice("/bicicletas/".length))}`;
+  }
+  if (caminho === "/catalogo") {
+    const condicao = new URLSearchParams(window.location.search).get("condicao");
+    return condicao ? `catalogo-${slug(condicao)}` : "catalogo";
+  }
+  return slug(caminho) || "home";
+}
+
+function ondeClicou(link) {
+  const pagina = paginaAtual();
+  const botao = link?.dataset?.ref ? slug(link.dataset.ref) : "";
+  return botao ? `${pagina}-${botao}` : pagina;
 }
 
 // Conta o clique no WhatsApp como Lead no Meta Pixel. O Meta liga o evento
 // ao anúncio que trouxe a pessoa, então o número sai por anúncio sem
 // precisar perguntar para a equipe.
-function registrarLead(ref) {
+function registrarLead(de, onde) {
   if (typeof window.fbq !== "function") return;
   window.fbq("track", "Lead", {
     content_name: "Clique no WhatsApp",
-    origem: ref ? ref.replace(/^ref /, "") : "direto",
+    origem: de,
+    botao: onde,
     pagina: window.location.pathname,
   });
 }
@@ -82,13 +119,17 @@ export default function OrigemTrafego() {
     function aoClicar(evento) {
       const link = evento.target.closest?.('a[href*="wa.me/"]');
       if (!link) return;
-      const ref = referencia(lerOrigem());
-      registrarLead(ref);
-      if (!ref) return;
+
+      const de = deOndeVeio(lerOrigem());
+      const onde = ondeClicou(link);
+      registrarLead(de, onde);
+
       const url = new URL(link.href);
       const texto = url.searchParams.get("text") || "";
-      if (texto.includes(ref)) return;
-      url.searchParams.set("text", `${texto}\n\n(${ref})`);
+      // Tira uma referência de um clique anterior (o botão flutuante e o do
+      // topo ficam na tela em todas as páginas) antes de escrever a atual.
+      const limpo = texto.replace(/\s*\(ref [^)]*\)\s*$/, "");
+      url.searchParams.set("text", `${limpo}\n\n(ref ${de} | ${onde})`);
       link.href = url.toString();
     }
 

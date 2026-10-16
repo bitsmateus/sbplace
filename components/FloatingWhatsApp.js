@@ -24,6 +24,7 @@ export default function FloatingWhatsApp() {
   return (
     <a
       href={whatsappLink(MESSAGE)}
+      data-ref="flutuante"
       target="_blank"
       rel="noopener noreferrer"
       aria-label="Falar no WhatsApp"

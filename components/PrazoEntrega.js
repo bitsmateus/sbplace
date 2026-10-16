@@ -241,6 +241,7 @@ function Resultado({ resultado: r, bikeName, pageUrl }) {
 
       <a
         href={whatsappLink(mensagem)}
+        data-ref="prazo-entrega"
         target="_blank"
         rel="noopener noreferrer"
         className="mt-2 inline-flex min-h-11 items-center gap-2 text-sm font-semibold text-ink underline underline-offset-4 transition hover:text-accent-dark"

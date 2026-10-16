@@ -30,6 +30,7 @@ export default function BikeComprar({ bikeName, pageUrl, isSold, full }) {
   return (
     <a
       href={href}
+      data-ref="comprar"
       target="_blank"
       rel="noopener noreferrer"
       className={`inline-flex h-12 items-center justify-center gap-2 rounded-full bg-ink px-8 font-semibold text-paper transition hover:bg-accent hover:text-ink md:h-[52px] ${

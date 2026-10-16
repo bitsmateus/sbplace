@@ -105,6 +105,7 @@ export function BikeFitSection() {
           </ul>
           <a
             href={whatsappLink("Olá! Quero saber mais sobre o bike fit da SB Place.")}
+            data-ref="bikefit"
             target="_blank"
             rel="noopener noreferrer"
             className="mt-2 inline-flex h-12 w-full items-center justify-center rounded-full bg-ink px-8 text-[15px] font-semibold text-paper transition hover:bg-gold hover:text-ink sm:w-auto md:h-[52px]"
@@ -264,6 +265,7 @@ export function TradeInSection() {
             href={whatsappLink(
               "Olá! Quero uma avaliação da minha bike usada para entrar como parte do pagamento."
             )}
+            data-ref="avaliacao-usada"
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex h-12 w-full items-center justify-center rounded-full bg-ink px-7 font-semibold text-paper transition hover:bg-accent hover:text-ink sm:w-auto md:h-[52px]"

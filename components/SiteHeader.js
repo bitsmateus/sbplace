@@ -47,6 +47,7 @@ export default function SiteHeader() {
           <div className="flex items-center gap-2">
             <a
               href={whatsappLink(WHATSAPP_MESSAGE)}
+              data-ref="header"
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex h-10 items-center rounded-full bg-paper px-4 text-sm font-semibold text-ink transition hover:bg-gold md:h-11 md:px-6 md:text-[15px]"
