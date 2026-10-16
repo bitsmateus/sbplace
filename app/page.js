@@ -162,6 +162,7 @@ function Hero() {
           <div className="mt-2 flex flex-col gap-3 sm:flex-row sm:gap-4">
             <a
               href={whatsappLink(WHATSAPP_HELLO)}
+              data-ref="topo"
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex h-12 items-center justify-center rounded-full bg-paper px-8 text-[15px] font-semibold text-ink transition hover:bg-gold md:h-[52px]"
@@ -308,6 +309,7 @@ function UsedBikesSection({ bikes }) {
             href={whatsappLink(
               "Olá! Gostaria de saber mais sobre as bikes seminovas."
             )}
+            data-ref="seminovas"
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex h-12 items-center justify-center rounded-full bg-gold px-7 font-semibold text-ink transition hover:bg-paper md:h-[52px]"
@@ -404,6 +406,7 @@ function StoreSection({ hours, addressLine }) {
             <span className="text-[15px] text-stone">WhatsApp</span>
             <a
               href={whatsappLink(WHATSAPP_HELLO)}
+              data-ref="telefone"
               target="_blank"
               rel="noopener noreferrer"
               className="text-3xl font-semibold leading-tight text-ink transition hover:text-accent-dark md:text-[32px]"
