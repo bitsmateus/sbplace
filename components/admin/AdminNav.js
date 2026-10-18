@@ -6,6 +6,7 @@ import LogoutButton from "./LogoutButton";
 
 const LINKS = [
   { href: "/admin", label: "Bicicletas", match: (p) => p === "/admin" || p.startsWith("/admin/bicicletas") },
+  { href: "/admin/equipe", label: "Equipe", match: (p) => p.startsWith("/admin/equipe") },
   { href: "/admin/configuracoes", label: "Configurações", match: (p) => p.startsWith("/admin/configuracoes") },
 ];
 
