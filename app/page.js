@@ -74,6 +74,7 @@ export default function HomePage() {
         <StoreSection
           hours={settings.hours}
           addressLine={settings.addressLine}
+          team={(settings.team || []).filter((m) => !m.hidden && m.name)}
         />
       </main>
       <SiteFooter />
@@ -359,7 +360,64 @@ function InstagramBand() {
   );
 }
 
-function StoreSection({ hours, addressLine }) {
+function TeamMemberCard({ member }) {
+  const parts = member.name.trim().split(/\s+/);
+  const first = parts[0];
+  const rest = parts.slice(1).join(" ");
+  const initials = (parts[0]?.[0] || "") + (parts[parts.length - 1]?.[0] || "");
+
+  return (
+    <li>
+      <div className="aspect-[3/4] w-full overflow-hidden rounded-xl bg-ink">
+        {member.photo ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            {...uploadImage(member.photo, [320, 480, 640])}
+            sizes="(min-width: 1024px) 18vw, (min-width: 640px) 30vw, 45vw"
+            alt={member.name}
+            loading="lazy"
+            className="h-full w-full object-cover object-top"
+          />
+        ) : (
+          <div className="flex h-full w-full items-center justify-center">
+            <span className="display text-4xl text-gold">{initials}</span>
+          </div>
+        )}
+      </div>
+      <p className="display mt-3 text-xl leading-none text-ink md:text-2xl">
+        {first}
+        {rest && <span className="block text-gold">{rest}</span>}
+      </p>
+      {member.role && (
+        <span className="mt-2 inline-flex items-center rounded-full border border-hairline px-3 py-1 text-[11px] uppercase tracking-[0.18em] text-stone">
+          {member.role}
+        </span>
+      )}
+    </li>
+  );
+}
+
+function TeamBlock({ team }) {
+  if (!team || team.length === 0) return null;
+
+  return (
+    <div className="container-page mt-14 border-t border-hairline pt-12 md:mt-20 md:pt-16">
+      <p className="text-xs uppercase tracking-[0.2em] text-stone">
+        Conheça nosso time
+      </p>
+      <h3 className="display mt-2 text-3xl text-ink md:text-4xl">
+        Quem faz a SB Place acontecer
+      </h3>
+      <ul className="mt-8 grid grid-cols-2 gap-x-5 gap-y-8 sm:grid-cols-3 lg:grid-cols-5">
+        {team.map((m, i) => (
+          <TeamMemberCard key={`${m.name}-${i}`} member={m} />
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+function StoreSection({ hours, addressLine, team }) {
   const hourLines = (hours || "")
     .split("\n")
     .map((l) => l.trim())
@@ -438,6 +496,8 @@ function StoreSection({ hours, addressLine }) {
           </div>
         </div>
       </div>
+
+      <TeamBlock team={team} />
     </section>
   );
 }
