@@ -12,6 +12,12 @@ const MESSAGE =
 // outro botão.
 export default function FloatingWhatsApp() {
   const pathname = usePathname();
+
+  // Nos cartões de contato dos consultores (/equipe/<slug>) o cliente já tem o
+  // WhatsApp do consultor na tela: o botão da loja atrapalharia e mandaria o
+  // lead para o número errado.
+  if (pathname.startsWith("/equipe/")) return null;
+
   const aboveAdminBar = pathname.startsWith("/admin/bicicletas/");
   const aboveBuyBar = pathname.startsWith("/bicicletas/");
 
