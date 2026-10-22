@@ -12,6 +12,7 @@ import { CorDaBikeProvider } from "@/components/CorDaBike";
 import { getBikeBySlug, listRelatedBikes } from "@/lib/bikes";
 import { formatPrice, installmentText, CATEGORIES } from "@/lib/bike-constants";
 import { coresDoModelo } from "@/lib/cores-specialized";
+import { isRedeConfigured } from "@/lib/rede";
 
 export const dynamic = "force-dynamic";
 
@@ -54,6 +55,11 @@ export default async function BikeDetailPage({ params }) {
   const showStatus = bike.status && bike.status !== "disponivel";
   const specs = bike.specs || [];
   const related = listRelatedBikes(bike, 3);
+  // Compra online: só seminova disponível e com a Rede configurada
+  const checkoutHref =
+    isUsed && bike.status === "disponivel" && bike.priceCents > 0 && isRedeConfigured()
+      ? `/comprar/${bike.slug}`
+      : undefined;
   // Bike nova: as cores de fábrica do modelo (bolinhas na galeria). Seminova
   // tem só a cor dela, então não entra.
   const cores = !isUsed && !isSold ? coresDoModelo(bike.name) : [];
@@ -148,7 +154,7 @@ export default async function BikeDetailPage({ params }) {
             </div>
 
             <div className="mt-6 hidden md:block">
-              <BikeComprar bikeName={bike.name} pageUrl={pageUrl} isSold={isSold} />
+              <BikeComprar bikeName={bike.name} pageUrl={pageUrl} isSold={isSold} checkoutHref={checkoutHref} />
               {!isSold && (
                 <p className="mt-3 text-sm text-stone">
                   Você fala direto com a equipe da SB Place pelo WhatsApp.
@@ -218,7 +224,7 @@ export default async function BikeDetailPage({ params }) {
 
       {/* No celular o botão de compra fica fixo no rodapé da tela */}
       <div className="fixed inset-x-0 bottom-0 z-30 border-t border-hairline bg-paper/95 p-3 backdrop-blur md:hidden">
-        <BikeComprar bikeName={bike.name} pageUrl={pageUrl} isSold={isSold} full />
+        <BikeComprar bikeName={bike.name} pageUrl={pageUrl} isSold={isSold} checkoutHref={checkoutHref} full />
       </div>
 
       <script
