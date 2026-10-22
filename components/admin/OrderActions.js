@@ -131,6 +131,18 @@ export default function OrderActions({ order }) {
         </section>
       )}
 
+      {["pago", "enviado", "entregue", "cancelado"].includes(status) && (
+        <section className="rounded-xl border border-line bg-ink-soft p-5">
+          <h2 className="font-semibold text-paper">WhatsApp do cliente</h2>
+          <p className="mt-1 text-sm text-mist">
+            Reenvia a mensagem do status atual. O resultado aparece no histórico.
+          </p>
+          <button type="button" disabled={busy} onClick={() => send({ action: "notify" })} className={`${ghostBtn} mt-3`}>
+            {busy ? "Enviando..." : "Reenviar mensagem"}
+          </button>
+        </section>
+      )}
+
       <OrderEditForm order={order} />
 
       <section className="rounded-xl border border-line bg-ink-soft p-5">

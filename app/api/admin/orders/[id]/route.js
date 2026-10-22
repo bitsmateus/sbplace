@@ -12,6 +12,7 @@ import {
 } from "@/lib/orders";
 import { isValidCpf, isValidEmail, onlyDigits } from "@/lib/order-constants";
 import { findTransactionByReference } from "@/lib/rede";
+import { sendOrderNotification } from "@/lib/notifications";
 
 export const dynamic = "force-dynamic";
 
@@ -71,7 +72,7 @@ export async function GET(request, { params }) {
   return NextResponse.json({ order });
 }
 
-// Ações do pedido: { action: "ship" | "deliver" | "cancel" | "edit" | "notes" | "recheck", ... }
+// Ações do pedido: { action: "ship" | "deliver" | "cancel" | "edit" | "notes" | "notify" | "recheck", ... }
 export async function PATCH(request, { params }) {
   const { id } = await params;
   const data = await request.json().catch(() => null);
@@ -95,6 +96,17 @@ export async function PATCH(request, { params }) {
       const valid = validateEdit(data, order);
       if (valid.error) return NextResponse.json({ error: valid.error }, { status: 400 });
       result = updateOrderDetails(id, valid);
+      break;
+    }
+    case "notify": {
+      // Reenvio manual da mensagem de WhatsApp do status atual
+      const event = ["pago", "enviado", "entregue", "cancelado"].includes(order.status) ? order.status : "";
+      if (!event) {
+        return NextResponse.json({ error: "Este status não tem mensagem de WhatsApp." }, { status: 400 });
+      }
+      const sent = await sendOrderNotification(order.id, event, { force: true });
+      if (!sent.ok) return NextResponse.json({ error: sent.error || "Não foi possível enviar." }, { status: 502 });
+      result = { order: getOrderById(id) };
       break;
     }
     case "notes":

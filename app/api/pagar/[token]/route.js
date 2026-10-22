@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { getLinkByToken, linkEffectiveStatus } from "@/lib/links";
 import { reserveLinkAndCreateOrder } from "@/lib/orders";
 import { isRedeConfigured } from "@/lib/rede";
-import { chargeOrder, clientIp, tooManyAttempts, validate } from "@/lib/checkout";
+import { chargeOrder, clientIp, requestOrigin, tooManyAttempts, validate } from "@/lib/checkout";
 
 export const dynamic = "force-dynamic";
 
@@ -46,6 +46,7 @@ export async function POST(request, { params }) {
     customer: valid.customer,
     address: link.requireAddress ? valid.address : {},
     installments: valid.installments,
+    siteUrl: requestOrigin(request),
   });
   if (reserved.error) return NextResponse.json({ error: reserved.error }, { status: 409 });
 

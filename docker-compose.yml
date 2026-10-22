@@ -13,6 +13,10 @@ services:
       REDE_TOKEN: ${REDE_TOKEN:-}
       REDE_ENV: ${REDE_ENV:-sandbox}
       REDE_SOFT_DESCRIPTOR: ${REDE_SOFT_DESCRIPTOR:-}
+      NX_API_URL: ${NX_API_URL:-}
+      NX_API_ID: ${NX_API_ID:-}
+      NX_API_TOKEN: ${NX_API_TOKEN:-}
+      SITE_URL: ${SITE_URL:-}
       DATA_DIR: /app/data
     volumes:
       - sbplace_data:/app/data

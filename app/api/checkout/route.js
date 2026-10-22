@@ -4,7 +4,7 @@ import { installmentInfo } from "@/lib/bike-constants";
 import { MAX_ONLINE_INSTALLMENTS } from "@/lib/order-constants";
 import { reserveBikeAndCreateOrder } from "@/lib/orders";
 import { isRedeConfigured } from "@/lib/rede";
-import { chargeOrder, clientIp, str, tooManyAttempts, validate } from "@/lib/checkout";
+import { chargeOrder, clientIp, requestOrigin, str, tooManyAttempts, validate } from "@/lib/checkout";
 
 export const dynamic = "force-dynamic";
 
@@ -46,6 +46,7 @@ export async function POST(request) {
     customer: valid.customer,
     address: valid.address,
     installments: valid.installments,
+    siteUrl: requestOrigin(request),
   });
   if (reserved.error) {
     return NextResponse.json({ error: reserved.error }, { status: 409 });
