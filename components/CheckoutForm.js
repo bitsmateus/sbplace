@@ -48,6 +48,7 @@ export default function CheckoutForm({
   const [errors, setErrors] = useState({});
   const [formError, setFormError] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [redirecting, setRedirecting] = useState(false);
   const [cepStatus, setCepStatus] = useState("");
   const lastCep = useRef("");
 
@@ -164,10 +165,23 @@ export default function CheckoutForm({
               }
             : {},
           card: { number: f.cardNumber, holder: f.holder, month: mm, year: `20${yy}`, cvv: f.cvv },
+          // dados do navegador exigidos pelo 3D Secure do banco
+          device: {
+            colorDepth: window.screen?.colorDepth,
+            screenHeight: window.screen?.height,
+            screenWidth: window.screen?.width,
+            timeZoneOffset: Math.round(new Date().getTimezoneOffset() / 60),
+          },
         }),
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || "Não foi possível concluir o pagamento.");
+      if (data.status === "autenticar" && data.redirectUrl) {
+        // o banco pede confirmação (3D Secure): o cliente vai para a página do banco
+        setRedirecting(true);
+        window.location.assign(data.redirectUrl);
+        return;
+      }
       router.push(`/pedido/${data.token}`);
     } catch (err) {
       setFormError(err.message || "Erro de conexão. Tente novamente.");
@@ -266,12 +280,16 @@ export default function CheckoutForm({
           disabled={submitting}
           className="inline-flex h-14 w-full items-center justify-center rounded-full bg-ink px-8 text-base font-semibold text-paper transition hover:bg-accent hover:text-ink disabled:opacity-60"
         >
-          {submitting ? "Processando pagamento..." : `Pagar ${formatPrice(priceCents)}`}
+          {redirecting
+            ? "Abrindo o seu banco..."
+            : submitting
+              ? "Processando pagamento..."
+              : `Pagar ${formatPrice(priceCents)}`}
         </button>
         <p className="mt-3 text-center text-sm text-stone">
           {submitting
             ? "Não feche nem atualize esta página."
-            : "Pagamento processado com segurança pela Rede (Itaú). Os dados do cartão não ficam salvos."}
+            : "Pagamento processado com segurança pela Rede (Itaú), com confirmação do seu banco. Os dados do cartão não ficam salvos."}
         </p>
       </div>
     </form>

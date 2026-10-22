@@ -2,7 +2,15 @@ import { NextResponse } from "next/server";
 import { getLinkByToken, linkEffectiveStatus } from "@/lib/links";
 import { reserveLinkAndCreateOrder } from "@/lib/orders";
 import { isRedeConfigured } from "@/lib/rede";
-import { chargeOrder, clientIp, requestOrigin, tooManyAttempts, validate } from "@/lib/checkout";
+import {
+  browserInfo,
+  chargeOrder,
+  clientIp,
+  releaseStaleReservation,
+  requestOrigin,
+  tooManyAttempts,
+  validate,
+} from "@/lib/checkout";
 
 export const dynamic = "force-dynamic";
 
@@ -22,8 +30,12 @@ export async function POST(request, { params }) {
     return NextResponse.json({ error: "Dados inválidos." }, { status: 400 });
   }
 
-  const link = getLinkByToken(token);
+  let link = getLinkByToken(token);
   if (!link) return NextResponse.json({ error: "Link de pagamento não encontrado." }, { status: 404 });
+  if (link.status === "em_uso") {
+    await releaseStaleReservation({ linkId: link.id });
+    link = getLinkByToken(token);
+  }
   if (linkEffectiveStatus(link) !== "ativo") {
     return NextResponse.json({ error: "Este link de pagamento não está mais disponível." }, { status: 409 });
   }
@@ -50,6 +62,6 @@ export async function POST(request, { params }) {
   });
   if (reserved.error) return NextResponse.json({ error: reserved.error }, { status: 409 });
 
-  const { status, body } = await chargeOrder(reserved.order, valid.card);
+  const { status, body } = await chargeOrder(reserved.order, valid.card, browserInfo(request, data));
   return NextResponse.json(body, { status });
 }

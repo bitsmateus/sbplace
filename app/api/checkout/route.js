@@ -4,7 +4,16 @@ import { installmentInfo } from "@/lib/bike-constants";
 import { MAX_ONLINE_INSTALLMENTS } from "@/lib/order-constants";
 import { reserveBikeAndCreateOrder } from "@/lib/orders";
 import { isRedeConfigured } from "@/lib/rede";
-import { chargeOrder, clientIp, requestOrigin, str, tooManyAttempts, validate } from "@/lib/checkout";
+import {
+  browserInfo,
+  chargeOrder,
+  clientIp,
+  releaseStaleReservation,
+  requestOrigin,
+  str,
+  tooManyAttempts,
+  validate,
+} from "@/lib/checkout";
 
 export const dynamic = "force-dynamic";
 
@@ -40,6 +49,8 @@ export async function POST(request) {
     );
   }
 
+  await releaseStaleReservation({ bikeId: bike.id });
+
   // O valor vem sempre do catálogo (nunca do navegador).
   const reserved = reserveBikeAndCreateOrder({
     bikeId: bike.id,
@@ -52,6 +63,6 @@ export async function POST(request) {
     return NextResponse.json({ error: reserved.error }, { status: 409 });
   }
 
-  const { status, body } = await chargeOrder(reserved.order, valid.card);
+  const { status, body } = await chargeOrder(reserved.order, valid.card, browserInfo(request, data));
   return NextResponse.json(body, { status });
 }

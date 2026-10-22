@@ -5,6 +5,8 @@ import SiteFooter from "@/components/SiteFooter";
 import { getOrderByToken, orderCode } from "@/lib/orders";
 import { formatPrice } from "@/lib/bike-constants";
 import { whatsappLink } from "@/lib/site-config";
+import { refreshWaitingOrder } from "@/lib/checkout";
+import AutoRefresh from "@/components/AutoRefresh";
 
 export const dynamic = "force-dynamic";
 
@@ -26,14 +28,20 @@ const MESSAGES = {
   verificar_pagamento:
     "Estamos confirmando o seu pagamento com o banco. Não precisa pagar de novo: assim que confirmar, a equipe entra em contato.",
   aguardando_pagamento: "Estamos processando o seu pagamento. Atualize a página em instantes.",
+  autenticando:
+    "Confirme a compra no app ou no site do seu banco. Assim que o banco confirmar, esta página atualiza sozinha.",
   recusado: "O pagamento não foi aprovado e nada foi cobrado. Você pode tentar novamente com outro cartão.",
   cancelado: "Este pedido foi cancelado.",
 };
 
 export default async function PedidoPage({ params }) {
   const { token } = await params;
-  const order = getOrderByToken(token);
+  let order = getOrderByToken(token);
   if (!order) notFound();
+
+  // Pagamento esperando a autenticação do banco (3DS): confere na Rede
+  order = (await refreshWaitingOrder(order)) || order;
+  const stillWaiting = order.status === "aguardando_pagamento";
 
   const reached = { pago: 1, enviado: 2, entregue: 3 }[order.status] || 0;
   const bad = order.status === "recusado" || order.status === "cancelado";
@@ -47,9 +55,16 @@ export default async function PedidoPage({ params }) {
         <div className="container-page max-w-2xl py-10 md:py-16">
           <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-stone">Pedido {code}</p>
           <h1 className="display mt-2 text-4xl text-ink md:text-5xl">
-            {bad ? "Pedido não concluído" : order.status === "verificar_pagamento" ? "Quase lá" : "Compra realizada"}
+            {bad
+              ? "Pedido não concluído"
+              : order.status === "verificar_pagamento" || stillWaiting
+                ? "Quase lá"
+                : "Compra realizada"}
           </h1>
-          <p className="mt-4 text-lg text-stone">{MESSAGES[order.status]}</p>
+          <p className="mt-4 text-lg text-stone">
+            {stillWaiting && order.payment?.threeDSPendingSince ? MESSAGES.autenticando : MESSAGES[order.status]}
+          </p>
+          {stillWaiting && <AutoRefresh />}
 
           {reached > 0 && (
             <ol className="mt-8 grid grid-cols-3 gap-2 text-center text-sm">
