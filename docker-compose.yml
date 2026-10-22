@@ -12,7 +12,7 @@ services:
       REDE_PV: ${REDE_PV:-}
       REDE_TOKEN: ${REDE_TOKEN:-}
       REDE_ENV: ${REDE_ENV:-sandbox}
-      REDE_SOFT_DESCRIPTOR: ${REDE_SOFT_DESCRIPTOR:-SBPLACE}
+      REDE_SOFT_DESCRIPTOR: ${REDE_SOFT_DESCRIPTOR:-}
       DATA_DIR: /app/data
     volumes:
       - sbplace_data:/app/data
