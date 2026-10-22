@@ -2,15 +2,67 @@ import { NextResponse } from "next/server";
 import {
   applyPaymentResult,
   cancelOrder,
+  deleteOrder,
   getOrderById,
   markDelivered,
   markShipped,
   orderCode,
   saveOrderNotes,
+  updateOrderDetails,
 } from "@/lib/orders";
+import { isValidCpf, isValidEmail, onlyDigits } from "@/lib/order-constants";
 import { findTransactionByReference } from "@/lib/rede";
 
 export const dynamic = "force-dynamic";
+
+const str = (v, max) => String(v ?? "").trim().slice(0, max);
+
+// Valida a edição feita no painel. Endereço só é exigido se o pedido já tinha.
+function validateEdit(data, order) {
+  const c = data.customer || {};
+  const customer = {
+    name: str(c.name, 120),
+    cpf: onlyDigits(c.cpf),
+    email: str(c.email, 120).toLowerCase(),
+    phone: onlyDigits(c.phone),
+  };
+  if (customer.name.length < 3) return { error: "Informe o nome do cliente." };
+  if (!isValidCpf(customer.cpf)) return { error: "CPF inválido." };
+  if (!isValidEmail(customer.email)) return { error: "E-mail inválido." };
+  if (customer.phone.length < 10 || customer.phone.length > 13) return { error: "Telefone inválido." };
+
+  let address;
+  if (data.address) {
+    const a = data.address;
+    address = {
+      cep: onlyDigits(a.cep),
+      street: str(a.street, 120),
+      number: str(a.number, 20),
+      complement: str(a.complement, 80),
+      district: str(a.district, 80),
+      city: str(a.city, 80),
+      state: str(a.state, 2).toUpperCase(),
+    };
+    const any = Object.values(address).some(Boolean);
+    const required = Boolean(order.address?.street) || any;
+    if (!required) {
+      address = undefined;
+    } else {
+      if (address.cep.length !== 8) return { error: "CEP inválido." };
+      if (!address.street || !address.number || !address.district || !address.city || address.state.length !== 2) {
+        return { error: "Preencha o endereço completo." };
+      }
+    }
+  }
+  return { customer, address };
+}
+
+export async function DELETE(request, { params }) {
+  const { id } = await params;
+  const result = deleteOrder(id);
+  if (result.error) return NextResponse.json({ error: result.error }, { status: 400 });
+  return NextResponse.json({ ok: true });
+}
 
 export async function GET(request, { params }) {
   const { id } = await params;
@@ -19,7 +71,7 @@ export async function GET(request, { params }) {
   return NextResponse.json({ order });
 }
 
-// Ações do pedido: { action: "ship" | "deliver" | "cancel" | "notes" | "recheck", ... }
+// Ações do pedido: { action: "ship" | "deliver" | "cancel" | "edit" | "notes" | "recheck", ... }
 export async function PATCH(request, { params }) {
   const { id } = await params;
   const data = await request.json().catch(() => null);
@@ -39,6 +91,12 @@ export async function PATCH(request, { params }) {
     case "cancel":
       result = cancelOrder(id, data.reason);
       break;
+    case "edit": {
+      const valid = validateEdit(data, order);
+      if (valid.error) return NextResponse.json({ error: valid.error }, { status: 400 });
+      result = updateOrderDetails(id, valid);
+      break;
+    }
     case "notes":
       result = { order: saveOrderNotes(id, data.notes) };
       break;

@@ -19,7 +19,7 @@ export default async function EditarBicicletaPage({ params, searchParams }) {
 
   return (
     <div>
-      <Link href="/admin" className="inline-flex min-h-11 items-center text-sm text-mist transition hover:text-paper">
+      <Link href="/admin/bicicletas" className="inline-flex min-h-11 items-center text-sm text-mist transition hover:text-paper">
         ← Voltar para a lista
       </Link>
       <h1 className="mt-3 text-3xl font-semibold tracking-tight">{bike.name}</h1>

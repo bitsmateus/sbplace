@@ -202,7 +202,7 @@ export default function BikeForm({ bike, initialFlash = "" }) {
         return;
       }
       if (goBack) {
-        router.push("/admin");
+        router.push("/admin/bicicletas");
       } else {
         setFlash("Alterações salvas.");
         router.refresh();
@@ -220,7 +220,7 @@ export default function BikeForm({ bike, initialFlash = "" }) {
       const res = await fetch(`/api/admin/bikes/${bike.id}`, { method: "DELETE" });
       if (!res.ok) throw new Error();
       setBaseline(JSON.stringify(payload)); // não avisar de alterações ao sair
-      router.push("/admin");
+      router.push("/admin/bicicletas");
       router.refresh();
     } catch {
       setError("Não foi possível excluir.");
@@ -524,7 +524,7 @@ export default function BikeForm({ bike, initialFlash = "" }) {
           </p>
           <div className="flex items-center gap-2">
             <Link
-              href="/admin"
+              href="/admin/bicicletas"
               className="inline-flex h-11 items-center rounded-full px-5 text-sm text-mist transition hover:text-paper"
             >
               {dirty ? "Descartar" : "Voltar"}

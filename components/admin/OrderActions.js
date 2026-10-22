@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import OrderEditForm from "./OrderEditForm";
+import { DELETABLE_STATUS } from "@/lib/order-constants";
 
 const inputClass =
   "w-full rounded-lg border border-line bg-ink px-3 py-2 text-sm text-paper focus:border-mist focus:outline-none";
@@ -21,6 +23,22 @@ export default function OrderActions({ order }) {
   const [notes, setNotes] = useState(order.notes || "");
   const [reason, setReason] = useState("");
   const [confirmingCancel, setConfirmingCancel] = useState(false);
+  const [confirmingDelete, setConfirmingDelete] = useState(false);
+
+  async function handleDelete() {
+    setBusy(true);
+    setError("");
+    try {
+      const res = await fetch(`/api/admin/orders/${order.id}`, { method: "DELETE" });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || "Não foi possível apagar.");
+      router.push("/admin/pedidos");
+      router.refresh();
+    } catch (err) {
+      setError(err.message);
+      setBusy(false);
+    }
+  }
 
   async function send(body) {
     setBusy(true);
@@ -113,6 +131,8 @@ export default function OrderActions({ order }) {
         </section>
       )}
 
+      <OrderEditForm order={order} />
+
       <section className="rounded-xl border border-line bg-ink-soft p-5">
         <h2 className="font-semibold text-paper">Anotações internas</h2>
         <textarea
@@ -162,6 +182,34 @@ export default function OrderActions({ order }) {
                   Voltar
                 </button>
               </div>
+            </div>
+          )}
+        </section>
+      )}
+
+      {DELETABLE_STATUS.includes(status) && (
+        <section className="rounded-xl border border-red-400/30 p-5">
+          <h2 className="font-semibold text-red-300">Apagar pedido</h2>
+          <p className="mt-1 text-sm text-mist">
+            Remove o pedido do painel de vez. Use para limpar tentativas recusadas ou pedidos cancelados.
+          </p>
+          {!confirmingDelete ? (
+            <button type="button" onClick={() => setConfirmingDelete(true)} className={`${ghostBtn} mt-3`}>
+              Apagar este pedido...
+            </button>
+          ) : (
+            <div className="mt-3 flex flex-wrap gap-3">
+              <button
+                type="button"
+                disabled={busy}
+                onClick={handleDelete}
+                className="inline-flex h-11 items-center justify-center rounded-full bg-red-500 px-6 text-sm font-semibold text-paper transition hover:bg-red-400 disabled:opacity-50"
+              >
+                Confirmar: apagar de vez
+              </button>
+              <button type="button" onClick={() => setConfirmingDelete(false)} className={ghostBtn}>
+                Voltar
+              </button>
             </div>
           )}
         </section>

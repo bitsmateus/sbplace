@@ -21,9 +21,18 @@ function formatDate(iso) {
 }
 
 export default async function PedidosPage({ searchParams }) {
-  const { status } = await searchParams;
+  const { status, q: rawQ } = await searchParams;
   const filter = ORDER_STATUS.some((s) => s.value === status) ? status : "";
-  const orders = listOrders({ status: filter });
+  const q = typeof rawQ === "string" ? rawQ.trim().slice(0, 80) : "";
+  const orders = listOrders({ status: filter, q });
+  const listTotal = orders.reduce((s, o) => s + (o.amountCents || 0), 0);
+  const tabHref = (value) => {
+    const params = new URLSearchParams();
+    if (value) params.set("status", value);
+    if (q) params.set("q", q);
+    const qs = params.toString();
+    return qs ? `/admin/pedidos?${qs}` : "/admin/pedidos";
+  };
   const counts = countOrdersByStatus();
   const total = Object.values(counts).reduce((a, b) => a + b, 0);
   const toShip = counts.pago || 0;
@@ -38,7 +47,7 @@ export default async function PedidosPage({ searchParams }) {
     <div>
       <h1 className="text-3xl font-semibold tracking-tight">Pedidos</h1>
       <p className="mt-1 text-sm text-mist">
-        Compras feitas pelo site. Acompanhe o pagamento e marque como enviado e entregue.
+        Compras feitas pelo site e por link. Acompanhe o pagamento e marque como enviado e entregue.
       </p>
 
       {!isRedeConfigured() && (
@@ -82,7 +91,7 @@ export default async function PedidosPage({ searchParams }) {
           return (
             <Link
               key={t.value || "todos"}
-              href={t.value ? `/admin/pedidos?status=${t.value}` : "/admin/pedidos"}
+              href={tabHref(t.value)}
               className={`rounded-full border px-4 py-2 transition ${
                 active
                   ? "border-paper bg-paper text-ink font-semibold"
@@ -95,12 +104,43 @@ export default async function PedidosPage({ searchParams }) {
         })}
       </div>
 
+      <form action="/admin/pedidos" className="mt-4 flex flex-wrap gap-2">
+        {filter && <input type="hidden" name="status" value={filter} />}
+        <input
+          type="search"
+          name="q"
+          defaultValue={q}
+          placeholder="Buscar por cliente, CPF, telefone, e-mail, código ou bike"
+          className="h-11 min-w-0 flex-1 rounded-lg border border-line bg-ink-soft px-3 text-sm text-paper placeholder:text-fog focus:border-mist focus:outline-none"
+        />
+        <button
+          type="submit"
+          className="inline-flex h-11 items-center justify-center rounded-full bg-paper px-5 text-sm font-semibold text-ink transition hover:bg-gold"
+        >
+          Buscar
+        </button>
+        {q && (
+          <Link
+            href={filter ? `/admin/pedidos?status=${filter}` : "/admin/pedidos"}
+            className="inline-flex h-11 items-center justify-center rounded-full border border-line px-5 text-sm text-mist transition hover:text-paper"
+          >
+            Limpar
+          </Link>
+        )}
+      </form>
+
+      {orders.length > 0 && (
+        <p className="mt-4 text-sm text-mist">
+          {orders.length} {orders.length === 1 ? "pedido" : "pedidos"} · {formatPrice(listTotal)}
+        </p>
+      )}
+
       {orders.length === 0 ? (
-        <p className="mt-10 rounded-xl border border-line bg-ink-soft p-8 text-center text-sm text-mist">
-          Nenhum pedido {filter ? "com esse status" : "ainda"}.
+        <p className="mt-6 rounded-xl border border-line bg-ink-soft p-8 text-center text-sm text-mist">
+          {q ? `Nenhum pedido encontrado para "${q}".` : `Nenhum pedido ${filter ? "com esse status" : "ainda"}.`}
         </p>
       ) : (
-        <ul className="mt-6 space-y-3">
+        <ul className="mt-3 space-y-3">
           {orders.map((o) => (
             <li key={o.id}>
               <Link

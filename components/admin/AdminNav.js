@@ -5,7 +5,8 @@ import { usePathname } from "next/navigation";
 import LogoutButton from "./LogoutButton";
 
 const LINKS = [
-  { href: "/admin", label: "Bicicletas", match: (p) => p === "/admin" || p.startsWith("/admin/bicicletas") },
+  { href: "/admin", label: "Início", match: (p) => p === "/admin" },
+  { href: "/admin/bicicletas", label: "Bicicletas", match: (p) => p.startsWith("/admin/bicicletas") },
   { href: "/admin/pedidos", label: "Pedidos", match: (p) => p.startsWith("/admin/pedidos") },
   { href: "/admin/links", label: "Links", match: (p) => p.startsWith("/admin/links") },
   { href: "/admin/equipe", label: "Equipe", match: (p) => p.startsWith("/admin/equipe") },
@@ -16,7 +17,7 @@ export default function AdminNav() {
   const pathname = usePathname();
 
   return (
-    <nav className="flex items-center gap-1 text-sm sm:gap-2">
+    <nav className="-mx-4 flex w-[calc(100%+2rem)] items-center gap-1 overflow-x-auto whitespace-nowrap px-4 text-sm lg:mx-0 lg:w-auto lg:overflow-visible lg:px-0 sm:gap-2">
       {LINKS.map((l) => {
         const active = l.match(pathname);
         return (
