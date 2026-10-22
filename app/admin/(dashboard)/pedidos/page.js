@@ -113,7 +113,9 @@ export default async function PedidosPage({ searchParams }) {
                   </p>
                   <p className="mt-1 truncate font-medium text-paper">{o.bikeName}</p>
                   <p className="truncate text-sm text-mist">
-                    {o.customer.name} · {o.address.city}/{o.address.state}
+                    {o.customer.name}
+                    {o.address?.city ? ` · ${o.address.city}/${o.address.state}` : ""}
+                    {o.source === "link" ? " · link de pagamento" : ""}
                   </p>
                 </div>
                 <div className="flex items-center justify-between gap-4 sm:flex-col sm:items-end sm:justify-center">

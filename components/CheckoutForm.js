@@ -31,10 +31,17 @@ function Field({ label, error, className = "", children }) {
 // Checkout da seminova: dados do cliente, endereço de entrega e cartão. Os
 // dados do cartão vão direto para a nossa API (que repassa à Rede) e nunca
 // ficam salvos.
-export default function CheckoutForm({ slug, priceCents, maxInstallments }) {
+export default function CheckoutForm({
+  slug,
+  endpoint = "/api/checkout",
+  requireAddress = true,
+  priceCents,
+  maxInstallments,
+  prefill = {},
+}) {
   const router = useRouter();
   const [f, setF] = useState({
-    name: "", cpf: "", email: "", phone: "",
+    name: prefill.name || "", cpf: "", email: "", phone: formatPhone(prefill.phone || ""),
     cep: "", street: "", number: "", complement: "", district: "", city: "", state: "",
     cardNumber: "", holder: "", expiry: "", cvv: "", installments: "1",
   });
@@ -79,6 +86,7 @@ export default function CheckoutForm({ slug, priceCents, maxInstallments }) {
 
   // CEP já consultado na página da bike
   useEffect(() => {
+    if (!requireAddress) return;
     try {
       const saved = localStorage.getItem(CHAVE_CEP) || "";
       if (/^\d{8}$/.test(saved)) {
@@ -108,12 +116,14 @@ export default function CheckoutForm({ slug, priceCents, maxInstallments }) {
     if (!isValidEmail(f.email)) e.email = "E-mail inválido.";
     const phone = onlyDigits(f.phone);
     if (phone.length < 10) e.phone = "Informe o telefone com DDD.";
-    if (onlyDigits(f.cep).length !== 8) e.cep = "CEP inválido.";
-    if (!f.street.trim()) e.street = "Informe a rua.";
-    if (!f.number.trim()) e.number = "Informe o número.";
-    if (!f.district.trim()) e.district = "Informe o bairro.";
-    if (!f.city.trim()) e.city = "Informe a cidade.";
-    if (f.state.trim().length !== 2) e.state = "UF com 2 letras.";
+    if (requireAddress) {
+      if (onlyDigits(f.cep).length !== 8) e.cep = "CEP inválido.";
+      if (!f.street.trim()) e.street = "Informe a rua.";
+      if (!f.number.trim()) e.number = "Informe o número.";
+      if (!f.district.trim()) e.district = "Informe o bairro.";
+      if (!f.city.trim()) e.city = "Informe a cidade.";
+      if (f.state.trim().length !== 2) e.state = "UF com 2 letras.";
+    }
     if (!isValidCardNumber(f.cardNumber)) e.cardNumber = "Número do cartão inválido.";
     if (f.holder.trim().length < 3) e.holder = "Nome como está no cartão.";
     const [mm, yy] = f.expiry.split("/");
@@ -140,17 +150,19 @@ export default function CheckoutForm({ slug, priceCents, maxInstallments }) {
     setSubmitting(true);
     const [mm, yy] = f.expiry.split("/");
     try {
-      const res = await fetch("/api/checkout", {
+      const res = await fetch(endpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          slug,
+          ...(slug ? { slug } : {}),
           installments: Number(f.installments),
           customer: { name: f.name, cpf: f.cpf, email: f.email, phone: f.phone },
-          address: {
-            cep: f.cep, street: f.street, number: f.number, complement: f.complement,
-            district: f.district, city: f.city, state: f.state,
-          },
+          address: requireAddress
+            ? {
+                cep: f.cep, street: f.street, number: f.number, complement: f.complement,
+                district: f.district, city: f.city, state: f.state,
+              }
+            : {},
           card: { number: f.cardNumber, holder: f.holder, month: mm, year: `20${yy}`, cvv: f.cvv },
         }),
       });
@@ -185,6 +197,7 @@ export default function CheckoutForm({ slug, priceCents, maxInstallments }) {
         </div>
       </section>
 
+      {requireAddress && (
       <section>
         <h2 className="text-xl font-semibold text-ink">Endereço de entrega</h2>
         <div className="mt-4 grid gap-4 sm:grid-cols-6">
@@ -212,6 +225,7 @@ export default function CheckoutForm({ slug, priceCents, maxInstallments }) {
           </Field>
         </div>
       </section>
+      )}
 
       <section>
         <h2 className="text-xl font-semibold text-ink">Pagamento com cartão de crédito</h2>

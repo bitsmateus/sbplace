@@ -65,13 +65,20 @@ export default async function PedidoPage({ params }) {
               />
             )}
             <div className="min-w-0">
-              <p className="text-xs uppercase tracking-wide text-fog">Bike</p>
-              <Link href={`/bicicletas/${order.bikeSlug}`} target="_blank" className="font-semibold text-paper hover:text-gold">
-                {order.bikeName} ↗
-              </Link>
+              <p className="text-xs uppercase tracking-wide text-fog">
+                {order.source === "link" ? "Link de pagamento" : "Bike"}
+              </p>
+              {order.bikeSlug ? (
+                <Link href={`/bicicletas/${order.bikeSlug}`} target="_blank" className="font-semibold text-paper hover:text-gold">
+                  {order.bikeName} ↗
+                </Link>
+              ) : (
+                <p className="font-semibold text-paper">{order.bikeName}</p>
+              )}
               <p className="mt-2 text-lg font-semibold text-paper">{formatPrice(order.amountCents)}</p>
               <p className="text-sm text-mist">
-                {order.installments}x de {formatPrice(order.installmentValueCents)} no cartão · frete grátis
+                {order.installments}x de {formatPrice(order.installmentValueCents)} no cartão
+                {order.source === "link" ? "" : " · frete grátis"}
               </p>
             </div>
           </section>
@@ -97,6 +104,7 @@ export default async function PedidoPage({ params }) {
             </dl>
           </section>
 
+          {address.street && (
           <section className="rounded-xl border border-line bg-ink-soft p-5">
             <h2 className="font-semibold text-paper">Entrega</h2>
             <dl className="mt-4 grid gap-4 sm:grid-cols-2">
@@ -113,6 +121,7 @@ export default async function PedidoPage({ params }) {
               {shipping.trackingCode && <Field label="Rastreio">{shipping.trackingCode}</Field>}
             </dl>
           </section>
+          )}
 
           <section className="rounded-xl border border-line bg-ink-soft p-5">
             <h2 className="font-semibold text-paper">Pagamento (Rede)</h2>

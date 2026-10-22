@@ -77,13 +77,16 @@ export default async function PedidoPage({ params }) {
             <p className="font-semibold text-ink">{order.bikeName}</p>
             <p className="mt-1 text-stone">
               {formatPrice(order.amountCents)} em {order.installments}x no cartão
-              {order.payment.cardLast4 ? ` final ${order.payment.cardLast4}` : ""} · frete grátis
+              {order.payment.cardLast4 ? ` final ${order.payment.cardLast4}` : ""}
+              {order.source === "link" ? "" : " · frete grátis"}
             </p>
-            <p className="mt-3 text-stone">
-              Entrega em: {order.address.street}, {order.address.number}
-              {order.address.complement ? ` — ${order.address.complement}` : ""} — {order.address.district},{" "}
-              {order.address.city}/{order.address.state}
-            </p>
+            {order.address?.street && (
+              <p className="mt-3 text-stone">
+                Entrega em: {order.address.street}, {order.address.number}
+                {order.address.complement ? ` — ${order.address.complement}` : ""} — {order.address.district},{" "}
+                {order.address.city}/{order.address.state}
+              </p>
+            )}
           </div>
 
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
@@ -96,10 +99,22 @@ export default async function PedidoPage({ params }) {
               Falar com a equipe no WhatsApp
             </a>
             <Link
-              href={order.status === "recusado" ? `/comprar/${order.bikeSlug}` : "/catalogo?condicao=seminova"}
+              href={
+                order.status === "recusado"
+                  ? order.source === "link"
+                    ? `/pagar/${order.linkToken}`
+                    : `/comprar/${order.bikeSlug}`
+                  : order.source === "link"
+                    ? "/"
+                    : "/catalogo?condicao=seminova"
+              }
               className="inline-flex h-12 items-center justify-center rounded-full border border-hairline px-8 font-semibold text-ink transition hover:border-ink"
             >
-              {order.status === "recusado" ? "Tentar novamente" : "Ver outras seminovas"}
+              {order.status === "recusado"
+                ? "Tentar novamente"
+                : order.source === "link"
+                  ? "Ir para o site"
+                  : "Ver outras seminovas"}
             </Link>
           </div>
           <p className="mt-6 text-sm text-stone">Guarde este link: é por ele que você acompanha o pedido.</p>
