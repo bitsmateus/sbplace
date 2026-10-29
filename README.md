@@ -78,14 +78,18 @@ as fotos entre reinicializações.
 
 **Lista de bicicletas** — abas *Todas / Novas / Seminovas* (com contagem), busca
 por nome, filtros por status e tipo e ordenação. Em cada linha dá para trocar a
-situação (Disponível, Reservada, Vendida, Oculta) e marcar o destaque (★) sem
-abrir a bike, além de **Editar**, **Ver no site**, **Duplicar** e **Excluir**.
+situação (Disponível, Reservada, Vendida, Oculta), marcar o destaque (★) e o
+selo roxo **Em revisão** (botão da chave inglesa) sem abrir a bike, além de
+**Editar**, **Ver no site**, **Duplicar** e **Excluir**.
 
 **Cadastrar / editar uma bike** — o formulário tem 5 seções:
 
 1. **Tipo e situação** — *Nova* (venda e retirada só na loja, até 12x) ou
    *Seminova* (enviada para todo o Brasil, até 21x). Uma bike nova cadastrada
    começa como **Oculta**: só aparece no site quando você muda a situação.
+   A caixinha **Em revisão** põe o selo roxo no site sem mudar a situação — a
+   bike continua à venda (inclusive online) e a Lia avisa o cliente que ela
+   está na oficina. Em bike vendida o selo não aparece.
 2. **Informações** — nome, tipo (MTB, speed, e-bike…), resumo de uma linha e
    descrição. Marque *destaque* para ela aparecer primeiro.
 3. **Preço e pagamento** — preço, preço à vista (opcional) e parcelamento
