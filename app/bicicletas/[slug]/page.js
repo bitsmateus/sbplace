@@ -4,13 +4,14 @@ import Link from "next/link";
 import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";
 import StatusBadge from "@/components/StatusBadge";
+import RevisaoBadge from "@/components/RevisaoBadge";
 import BikeGallery from "@/components/BikeGallery";
 import BikeCard from "@/components/BikeCard";
 import PrazoEntrega from "@/components/PrazoEntrega";
 import BikeComprar from "@/components/BikeComprar";
 import { CorDaBikeProvider } from "@/components/CorDaBike";
 import { getBikeBySlug, listRelatedBikes } from "@/lib/bikes";
-import { formatPrice, installmentText, CATEGORIES } from "@/lib/bike-constants";
+import { formatPrice, installmentText, CATEGORIES, isInReview } from "@/lib/bike-constants";
 import { coresDoModelo } from "@/lib/cores-specialized";
 import { isRedeConfigured } from "@/lib/rede";
 
@@ -132,6 +133,7 @@ export default async function BikeDetailPage({ params }) {
                 </span>
               )}
               {showStatus && <StatusBadge status={bike.status} />}
+              {isInReview(bike) && <RevisaoBadge />}
             </div>
 
             <h1 className="display mt-3 text-4xl text-ink md:text-5xl">{bike.name}</h1>
