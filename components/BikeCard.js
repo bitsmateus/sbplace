@@ -1,6 +1,7 @@
 import Link from "next/link";
-import { formatPrice, installmentText, CATEGORIES } from "@/lib/bike-constants";
+import { formatPrice, installmentText, CATEGORIES, isInReview } from "@/lib/bike-constants";
 import StatusBadge from "./StatusBadge";
+import RevisaoBadge from "./RevisaoBadge";
 import BikePlaceholder from "./BikePlaceholder";
 import { uploadImage } from "@/lib/uploads";
 
@@ -69,13 +70,14 @@ export default function BikeCard({ bike, variant = "light", priority = false }) 
         ) : (
           <BikePlaceholder className={`h-full w-full p-10 ${v.placeholder}`} />
         )}
-        <div className="absolute left-3 top-3 flex gap-2">
+        <div className="absolute left-3 right-3 top-3 flex flex-wrap gap-2">
           {condition === "seminova" && (
             <span className="inline-block rounded-full bg-gold px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-ink">
               Seminova
             </span>
           )}
           {showStatus && <StatusBadge status={bike.status} />}
+          {isInReview(bike) && <RevisaoBadge />}
         </div>
       </div>
 
