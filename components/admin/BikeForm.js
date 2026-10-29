@@ -89,6 +89,7 @@ export default function BikeForm({ bike, initialFlash = "" }) {
   const [category, setCategory] = useState(bike?.category || CATEGORIES[0].value);
   const [status, setStatus] = useState(bike?.status || (isEditing ? "disponivel" : "oculta"));
   const [featured, setFeatured] = useState(bike?.featured || false);
+  const [inReview, setInReview] = useState(bike?.inReview || false);
   const [subtitle, setSubtitle] = useState(bike?.subtitle || "");
   const [description, setDescription] = useState(bike?.description || "");
   const [price, setPrice] = useState(centsToInput(bike?.priceCents));
@@ -122,9 +123,10 @@ export default function BikeForm({ bike, initialFlash = "" }) {
       specs: specs.filter((s) => s.label.trim() && s.value.trim()),
       status,
       featured,
+      inReview,
       images,
     }),
-    [name, category, condition, subtitle, price, cashPrice, installments, installmentValue, description, specs, status, featured, images]
+    [name, category, condition, subtitle, price, cashPrice, installments, installmentValue, description, specs, status, featured, inReview, images]
   );
 
   // "sujo" = há alterações não salvas
@@ -288,6 +290,33 @@ export default function BikeForm({ bike, initialFlash = "" }) {
                 </p>
               </div>
             </div>
+
+            <label
+              className={`mt-6 flex min-h-11 items-start gap-3 rounded-xl border border-line p-4 text-sm ${
+                status === "vendida" ? "cursor-not-allowed opacity-60" : "cursor-pointer"
+              }`}
+            >
+              <input
+                type="checkbox"
+                checked={inReview && status !== "vendida"}
+                disabled={status === "vendida"}
+                onChange={(e) => setInReview(e.target.checked)}
+                className="mt-0.5 h-5 w-5 shrink-0 rounded border-line accent-[#7c3aed]"
+              />
+              <span>
+                <span className="flex flex-wrap items-center gap-2 font-semibold text-paper">
+                  Marcar com o selo
+                  <span className="rounded-full bg-revisao px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-paper">
+                    Em revisão
+                  </span>
+                </span>
+                <span className="mt-1 block text-xs text-fog">
+                  {status === "vendida"
+                    ? "Bike vendida não mostra o selo de revisão."
+                    : "Mostra o selo roxo no site. A situação continua a escolhida acima e a compra funciona normalmente."}
+                </span>
+              </span>
+            </label>
           </Section>
 
           <Section number="2" title="Informações da bike">

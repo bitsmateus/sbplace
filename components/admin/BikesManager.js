@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { formatPrice, CATEGORIES, STATUS } from "@/lib/bike-constants";
+import { formatPrice, CATEGORIES, STATUS, isInReview } from "@/lib/bike-constants";
 import { uploadUrl } from "@/lib/uploads";
 
 const TABS = [
@@ -69,6 +69,7 @@ export default function BikesManager({ bikes }) {
       reservada: items.filter((b) => b.status === "reservada").length,
       vendida: items.filter((b) => b.status === "vendida").length,
       oculta: items.filter((b) => b.status === "oculta").length,
+      revisao: items.filter(isInReview).length,
     }),
     [items]
   );
@@ -77,7 +78,10 @@ export default function BikesManager({ bikes }) {
     const needle = q.trim().toLowerCase();
     let list = items.filter((b) => {
       if (tab !== "todas" && cond(b) !== tab) return false;
-      if (status && b.status !== status) return false;
+      // "revisao" no filtro é a marcação extra, não uma situação
+      if (status === "revisao") {
+        if (!isInReview(b)) return false;
+      } else if (status && b.status !== status) return false;
       if (category && b.category !== category) return false;
       if (
         needle &&
@@ -166,12 +170,13 @@ export default function BikesManager({ bikes }) {
   return (
     <div>
       {/* Resumo */}
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-5">
         {[
           ["Disponíveis", stats.disponivel, "text-emerald-300"],
           ["Reservadas", stats.reservada, "text-amber-300"],
           ["Vendidas", stats.vendida, "text-mist"],
           ["Ocultas", stats.oculta, "text-fog"],
+          ["Em revisão", stats.revisao, "text-violet-300"],
         ].map(([label, n, color]) => (
           <div key={label} className="rounded-xl border border-line bg-ink-soft p-4">
             <p className={`text-2xl font-semibold ${color}`}>{n}</p>
@@ -226,6 +231,7 @@ export default function BikesManager({ bikes }) {
               {s.label.replace(" (não aparece no site)", "")}
             </option>
           ))}
+          <option value="revisao">Em revisão</option>
         </select>
         <select value={category} onChange={(e) => setCategory(e.target.value)} aria-label="Filtrar por tipo" className={fieldClass}>
           <option value="">Todos os tipos</option>
@@ -299,6 +305,11 @@ export default function BikesManager({ bikes }) {
                       >
                         {isUsed ? "Seminova" : "Nova"}
                       </span>
+                      {isInReview(bike) && (
+                        <span className="rounded-full bg-revisao px-2 py-0.5 text-[10px] font-bold uppercase text-paper">
+                          Em revisão
+                        </span>
+                      )}
                       <span>{catLabel}</span>
                       <span>· {bike.images?.length || 0} {bike.images?.length === 1 ? "foto" : "fotos"}</span>
                     </div>
@@ -346,6 +357,35 @@ export default function BikesManager({ bikes }) {
                     }`}
                   >
                     ★
+                  </button>
+                  <button
+                    type="button"
+                    disabled={busy || bike.status === "vendida"}
+                    onClick={() =>
+                      patch(
+                        bike,
+                        { inReview: !bike.inReview },
+                        bike.inReview ? "Selo Em revisão removido." : "Marcada como em revisão."
+                      )
+                    }
+                    aria-pressed={isInReview(bike)}
+                    aria-label={isInReview(bike) ? "Tirar o selo Em revisão" : "Marcar como em revisão"}
+                    title={
+                      bike.status === "vendida"
+                        ? "Bike vendida não mostra o selo Em revisão"
+                        : isInReview(bike)
+                          ? "Em revisão (clique para tirar o selo)"
+                          : "Marcar como em revisão"
+                    }
+                    className={`flex h-10 w-10 items-center justify-center rounded-full border transition disabled:cursor-not-allowed disabled:opacity-40 ${
+                      isInReview(bike)
+                        ? "border-revisao bg-revisao/20 text-violet-300"
+                        : "border-line text-fog hover:text-paper"
+                    }`}
+                  >
+                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                      <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" />
+                    </svg>
                   </button>
                 </div>
 
