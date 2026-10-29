@@ -44,6 +44,7 @@ export async function PUT(request, { params }) {
     specs: data.specs,
     status: data.status,
     featured: data.featured !== undefined ? !!data.featured : undefined,
+    inReview: data.inReview !== undefined ? !!data.inReview : undefined,
     images: Array.isArray(data.images) ? data.images : undefined,
     position: data.position !== undefined ? Number(data.position) : undefined,
   });
