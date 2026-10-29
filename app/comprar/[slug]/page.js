@@ -3,8 +3,9 @@ import Link from "next/link";
 import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";
 import CheckoutForm from "@/components/CheckoutForm";
+import RevisaoBadge from "@/components/RevisaoBadge";
 import { getBikeBySlug } from "@/lib/bikes";
-import { formatPrice, installmentInfo } from "@/lib/bike-constants";
+import { formatPrice, installmentInfo, isInReview } from "@/lib/bike-constants";
 import { MAX_ONLINE_INSTALLMENTS } from "@/lib/order-constants";
 import { isRedeConfigured } from "@/lib/rede";
 import { uploadUrl } from "@/lib/uploads";
@@ -53,9 +54,12 @@ export default async function ComprarPage({ params }) {
                     <img src={uploadUrl(image, 320)} alt="" className="h-24 w-24 shrink-0 rounded-xl bg-paper object-cover" />
                   )}
                   <div className="min-w-0">
-                    <span className="rounded-full bg-gold px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-ink">
-                      Seminova
-                    </span>
+                    <div className="flex flex-wrap gap-1.5">
+                      <span className="rounded-full bg-gold px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-ink">
+                        Seminova
+                      </span>
+                      {isInReview(bike) && <RevisaoBadge />}
+                    </div>
                     <p className="mt-2 font-semibold text-ink">{bike.name}</p>
                   </div>
                 </div>

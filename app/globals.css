@@ -14,6 +14,9 @@
      Bom contraste só sobre fundo escuro — em fundo claro use como fundo de selo. */
   --color-gold: #CDAA5E;
 
+  /* Roxo do selo "Em revisão" (texto branco por cima: contraste 5,7:1). */
+  --color-revisao: #7c3aed;
+
   /* Tema claro do site público */
   --color-bone: #f3f3f0;
   --color-stone: #5a5a57;

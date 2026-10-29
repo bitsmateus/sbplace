@@ -31,6 +31,7 @@ export async function POST(request) {
     specs: data.specs,
     status: data.status,
     featured: !!data.featured,
+    inReview: !!data.inReview,
     images: Array.isArray(data.images) ? data.images : [],
     position: Number(data.position) || 0,
   });

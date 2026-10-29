@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { listBikes } from "@/lib/bikes";
-import { formatPrice, installmentInfo, CATEGORIES } from "@/lib/bike-constants";
+import { formatPrice, installmentInfo, CATEGORIES, isInReview } from "@/lib/bike-constants";
 
 // Consulta de estoque usada pela Lia, o agente de IA do WhatsApp (nxSystems).
 //
@@ -8,7 +8,8 @@ import { formatPrice, installmentInfo, CATEGORIES } from "@/lib/bike-constants";
 // um modelo ou diz quanto quer investir. A resposta traz só as seminovas que
 // estão à venda agora (bike vendida, reservada ou oculta não aparece), com
 // nome, tamanho, preço à vista, parcelado e o link da página — o que o
-// consultor mandaria à mão.
+// consultor mandaria à mão. Seminova com o selo "Em revisão" aparece com o
+// aviso de que está em revisão na oficina e logo fica liberada.
 //
 // Somente leitura: os dados são os mesmos que já aparecem no catálogo público.
 // Aceita GET (?tipo=mtb&valor_maximo=20000&altura=175&modelo=razzo) e POST com
@@ -292,6 +293,7 @@ function resumirBike(bike, base, alturaCm) {
     parcelado: bike.priceCents ? `${count}x de ${formatPrice(valueCents)} sem juros` : "",
     serve_para_altura: serveAltura(faixa, alturaCm),
     link: `${base}/bicicletas/${bike.slug}`,
+    em_revisao: isInReview(bike),
     avistaCents,
   };
 }
@@ -304,6 +306,7 @@ function linhaDeTexto(b, i) {
   if (b.parcelado) partes.push(`ou ${b.parcelado}`);
   if (b.serve_para_altura === true) partes.push("serve para a altura informada");
   if (b.serve_para_altura === false) partes.push("tamanho provavelmente não serve para a altura informada");
+  if (b.em_revisao) partes.push("EM REVISÃO na oficina, logo fica liberada");
   return `${i + 1}) ${partes.join(" — ")} — ${b.link}`;
 }
 
@@ -431,6 +434,12 @@ async function responder(request) {
     const { avistaCents, ...publico } = r;
     return publico;
   });
+
+  if (bikes.some((b) => b.em_revisao)) {
+    avisos.push(
+      "Bike marcada como EM REVISÃO: ao oferecer, avise o cliente que ela está em revisão na oficina e logo fica liberada."
+    );
+  }
 
   const rotuloTipo = tipo ? (CATEGORIES.find((c) => c.value === tipo)?.label || tipo).toLowerCase() : "";
   let cabecalho;

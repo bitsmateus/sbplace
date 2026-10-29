@@ -38,6 +38,7 @@ function StockCard({ title, data, href }) {
     ["Reservadas", data.reserved],
     ["Vendidas", data.sold],
     ["Ocultas", data.hidden],
+    ["Em revisão", data.inReview],
   ];
   return (
     <div className={card}>
@@ -54,7 +55,7 @@ function StockCard({ title, data, href }) {
       <p className="mt-3 text-sm text-mist">
         Valor em estoque: <strong className="text-paper">{formatPrice(data.availableValueCents)}</strong>
       </p>
-      <dl className="mt-4 grid grid-cols-3 gap-2 border-t border-line pt-4 text-center">
+      <dl className="mt-4 grid grid-cols-4 gap-2 border-t border-line pt-4 text-center">
         {rows.map(([label, n]) => (
           <div key={label}>
             <dt className="text-xs text-fog">{label}</dt>
