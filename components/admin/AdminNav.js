@@ -8,6 +8,7 @@ const LINKS = [
   { href: "/admin", label: "Início", match: (p) => p === "/admin" },
   { href: "/admin/bicicletas", label: "Bicicletas", match: (p) => p.startsWith("/admin/bicicletas") },
   { href: "/admin/pedidos", label: "Pedidos", match: (p) => p.startsWith("/admin/pedidos") },
+  { href: "/admin/contatos", label: "Contatos", match: (p) => p.startsWith("/admin/contatos") },
   { href: "/admin/links", label: "Links", match: (p) => p.startsWith("/admin/links") },
   { href: "/admin/equipe", label: "Equipe", match: (p) => p.startsWith("/admin/equipe") },
   { href: "/admin/configuracoes", label: "Configurações", match: (p) => p.startsWith("/admin/configuracoes") },
