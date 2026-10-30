@@ -4,6 +4,7 @@ import "@fontsource/inter/600.css";
 import "@fontsource/inter/700.css";
 import "./globals.css";
 import FloatingWhatsApp from "@/components/FloatingWhatsApp";
+import LeadPopup from "@/components/LeadPopup";
 import MetaPixel from "@/components/MetaPixel";
 import OrigemTrafego from "@/components/OrigemTrafego";
 
@@ -21,6 +22,7 @@ export default function RootLayout({ children }) {
         <OrigemTrafego />
         {children}
         <FloatingWhatsApp />
+        <LeadPopup />
       </body>
     </html>
   );
