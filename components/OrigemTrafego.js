@@ -118,7 +118,9 @@ export default function OrigemTrafego() {
     // mexer em cada um deles.
     function aoClicar(evento) {
       const link = evento.target.closest?.('a[href*="wa.me/"]');
-      if (!link) return;
+      // data-sem-ref: link do painel para a loja chamar o cliente — não é
+      // lead e não pode levar a marca de origem na mensagem.
+      if (!link || link.hasAttribute("data-sem-ref")) return;
 
       const de = deOndeVeio(lerOrigem());
       const onde = ondeClicou(link);
