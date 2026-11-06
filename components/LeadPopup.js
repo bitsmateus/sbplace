@@ -12,6 +12,12 @@ import { usePathname } from "next/navigation";
 //   enviou o contato ou clicou em qualquer botão de WhatsApp → não volta mais;
 // - não aparece no painel, no checkout, nos pedidos nem nos cartões da equipe;
 // - X grande e sempre visível, fecha também com Esc ou tocando fora.
+//
+// Modo "WhatsApp": todo botão de WhatsApp do site também abre este formulário
+// antes de levar a pessoa para a conversa. Ela deixa nome e telefone, o
+// contato fica salvo no painel e o WhatsApp abre em seguida com a mensagem do
+// botão (já com a marca de origem). Quem já deixou o contato (ou já pulou o
+// formulário uma vez) vai direto, sem ser perguntado de novo.
 const CHAVE = "sbp_lead";
 const CHAVE_ORIGEM = "sbp_origem";
 const ESPERA_MS = 15_000;
@@ -74,16 +80,18 @@ export default function LeadPopup() {
   const [erro, setErro] = useState("");
   const [enviando, setEnviando] = useState(false);
   const [enviado, setEnviado] = useState(false);
+  // Link de WhatsApp que a pessoa clicou (modo WhatsApp); null = popup normal.
+  const [linkWhats, setLinkWhats] = useState(null);
   const empresaRef = useRef(null);
   const nomeRef = useRef(null);
 
   const fora = PAGINAS_FORA.some((p) => pathname.startsWith(p));
   const naBike = pathname.startsWith("/bicicletas/");
 
-  // Agenda a abertura (tempo ou rolagem) e para de vez se a pessoa já
-  // chamou no WhatsApp.
+  // Agenda a abertura (tempo ou rolagem) e intercepta os botões de WhatsApp:
+  // em vez de sair do site na hora, abre o formulário no modo WhatsApp.
   useEffect(() => {
-    if (fora || !podeMostrar()) return;
+    if (fora) return;
 
     let disparado = false;
     function abrir() {
@@ -91,24 +99,35 @@ export default function LeadPopup() {
       disparado = true;
       setAberto(true);
     }
-    const timer = setTimeout(abrir, ESPERA_MS);
+    const timer = podeMostrar() ? setTimeout(abrir, ESPERA_MS) : null;
     function aoRolar() {
       const total = document.documentElement.scrollHeight - window.innerHeight;
       if (total > 0 && window.scrollY / total > 0.5) abrir();
     }
     function aoClicarWhats(e) {
-      if (e.target.closest?.('a[href*="wa.me/"]')) {
-        gravar("whatsapp");
-        disparado = true;
+      const link = e.target.closest?.('a[href*="wa.me/"]');
+      // data-sem-ref: link do painel para a loja chamar o cliente — não é lead.
+      if (!link || link.hasAttribute("data-sem-ref")) return;
+      disparado = true;
+      const salvo = ler(CHAVE);
+      // Já deixou o contato ou já pulou o formulário: vai direto.
+      if (salvo && (salvo.s === "enviado" || salvo.s === "whatsapp")) {
         setAberto(false);
+        return;
       }
+      e.preventDefault();
+      // O OrigemTrafego já escreveu a marca de origem no href neste clique.
+      setLinkWhats(link.href);
+      setErro("");
+      setAberto(true);
     }
     window.addEventListener("scroll", aoRolar, { passive: true });
-    document.addEventListener("click", aoClicarWhats, true);
+    // Depois (bubble) do OrigemTrafego, que roda na captura e ajusta o href.
+    document.addEventListener("click", aoClicarWhats);
     return () => {
-      clearTimeout(timer);
+      if (timer) clearTimeout(timer);
       window.removeEventListener("scroll", aoRolar);
-      document.removeEventListener("click", aoClicarWhats, true);
+      document.removeEventListener("click", aoClicarWhats);
     };
   }, [fora, pathname]);
 
@@ -127,6 +146,17 @@ export default function LeadPopup() {
   function fechar() {
     if (!enviado) gravar("fechado");
     setAberto(false);
+    setLinkWhats(null);
+  }
+
+  // "Prefiro ir direto": abre o WhatsApp sem pedir o contato e não pergunta
+  // de novo.
+  function irDireto() {
+    gravar("whatsapp");
+    setAberto(false);
+    const destino = linkWhats;
+    setLinkWhats(null);
+    if (destino) window.open(destino, "_blank", "noopener");
   }
 
   async function enviar(e) {
@@ -136,19 +166,40 @@ export default function LeadPopup() {
     const digitos = telefone.replace(/\D/g, "");
     if (digitos.length < 10) return setErro("Digite seu WhatsApp com DDD.");
 
+    const corpo = JSON.stringify({
+      name: nome,
+      phone: telefone,
+      empresa: empresaRef.current?.value || "",
+      page: window.location.pathname + window.location.search,
+      pageTitle: document.title,
+      origem: linkWhats ? `${origemAtual()} (botão WhatsApp)` : origemAtual(),
+    });
+
+    // Modo WhatsApp: salva o contato em segundo plano e abre o WhatsApp na
+    // hora, ainda dentro do clique (senão o navegador bloqueia a nova aba).
+    // O clique no botão já contou como Lead no Pixel (OrigemTrafego).
+    if (linkWhats) {
+      const destino = linkWhats;
+      gravar("enviado");
+      fetch("/api/leads", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: corpo,
+        keepalive: true,
+      }).catch(() => {});
+      setEnviado(true);
+      setAberto(false);
+      setLinkWhats(null);
+      window.open(destino, "_blank", "noopener");
+      return;
+    }
+
     setEnviando(true);
     try {
       const resp = await fetch("/api/leads", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: nome,
-          phone: telefone,
-          empresa: empresaRef.current?.value || "",
-          page: window.location.pathname + window.location.search,
-          pageTitle: document.title,
-          origem: origemAtual(),
-        }),
+        body: corpo,
       });
       const json = await resp.json().catch(() => ({}));
       if (!resp.ok) throw new Error(json.error || "Não foi possível enviar.");
@@ -216,12 +267,18 @@ export default function LeadPopup() {
               SB Place · Specialized
             </p>
             <h2 id="lead-titulo" className="display mt-2 pr-12 text-[1.6rem] md:text-3xl">
-              {naBike ? "Gostou dessa bike?" : "Quer ajuda para escolher sua bike?"}
+              {linkWhats
+                ? "Antes de chamar, deixe seu contato"
+                : naBike
+                  ? "Gostou dessa bike?"
+                  : "Quer ajuda para escolher sua bike?"}
             </h2>
             <p className="mt-2 text-sm leading-relaxed text-stone">
-              {naBike
-                ? "Deixe seu WhatsApp que um consultor manda fotos, condições e parcelamento."
-                : "Deixe seu WhatsApp que um consultor chama você com as melhores opções."}
+              {linkWhats
+                ? "Assim um consultor já sabe quem é você e retoma a conversa se cair. Em seguida o WhatsApp abre."
+                : naBike
+                  ? "Deixe seu WhatsApp que um consultor manda fotos, condições e parcelamento."
+                  : "Deixe seu WhatsApp que um consultor chama você com as melhores opções."}
             </p>
 
             <div className="mt-5 space-y-3">
@@ -275,14 +332,20 @@ export default function LeadPopup() {
               disabled={enviando}
               className="mt-4 h-12 w-full rounded-full bg-ink text-base font-semibold text-paper transition hover:bg-accent hover:text-ink disabled:opacity-60"
             >
-              {enviando ? "Enviando..." : "Quero ser chamado"}
+              {enviando ? "Enviando..." : linkWhats ? "Ir para o WhatsApp" : "Quero ser chamado"}
             </button>
 
             <div className="mt-3 flex items-center justify-between gap-3 text-xs text-fog">
               <span>Leva 5 segundos. Sem spam.</span>
-              <button type="button" onClick={fechar} className="underline underline-offset-2 hover:text-ink">
-                Agora não
-              </button>
+              {linkWhats ? (
+                <button type="button" onClick={irDireto} className="underline underline-offset-2 hover:text-ink">
+                  Prefiro ir direto
+                </button>
+              ) : (
+                <button type="button" onClick={fechar} className="underline underline-offset-2 hover:text-ink">
+                  Agora não
+                </button>
+              )}
             </div>
           </form>
         )}
