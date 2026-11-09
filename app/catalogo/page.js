@@ -4,6 +4,8 @@ import SiteFooter from "@/components/SiteFooter";
 import BikeCard from "@/components/BikeCard";
 import { listBikes, CATEGORIES } from "@/lib/bikes";
 import { CONDITIONS } from "@/lib/bike-constants";
+import { normalizarTamanho, tamanhosDaBike, opcoesDeTamanho } from "@/lib/tamanhos";
+import FiltroTamanho from "@/components/FiltroTamanho";
 import { HowItWorksSection, TradeInSection } from "@/components/HomeExtras";
 
 export const dynamic = "force-dynamic";
@@ -27,10 +29,11 @@ const HEADINGS = {
   },
 };
 
-function buildHref({ categoria, condicao, busca }) {
+function buildHref({ categoria, condicao, tamanho, busca }) {
   const qs = new URLSearchParams();
   if (condicao) qs.set("condicao", condicao);
   if (categoria) qs.set("categoria", categoria);
+  if (tamanho) qs.set("tamanho", tamanho);
   if (busca) qs.set("busca", busca);
   const str = qs.toString();
   return str ? `/catalogo?${str}` : "/catalogo";
@@ -44,12 +47,28 @@ export default async function CatalogoPage({ searchParams }) {
     ? params.condicao
     : "";
 
-  const bikes = listBikes({
-    onlyPublic: true,
-    category: categoria || undefined,
-    condition: condicao || undefined,
-    search: busca || undefined,
-  });
+  const tamanho = normalizarTamanho(params?.tamanho);
+
+  // Uma leitura só do catálogo; condição, tipo e tamanho são filtrados aqui,
+  // para também saber quais tamanhos existem em cada aba.
+  const todas = listBikes({ onlyPublic: true, search: busca || undefined });
+  const daAba = (cond, cat) =>
+    todas.filter(
+      (b) =>
+        // bikes cadastradas antes do campo existir contam como novas
+        (!cond || (b.condition || "nova") === cond) && (!cat || b.category === cat)
+    );
+  const semTamanho = daAba(condicao, categoria);
+  const bikes = tamanho
+    ? semTamanho.filter((b) => tamanhosDaBike(b).includes(tamanho))
+    : semTamanho;
+  const gruposDeTamanho = opcoesDeTamanho(semTamanho, tamanho);
+  // Ao trocar de aba, o tamanho escolhido só continua se existir bike desse
+  // tamanho lá — senão o cliente cairia numa lista vazia.
+  const tamanhoNaAba = (cond, cat) =>
+    tamanho && daAba(cond, cat).some((b) => tamanhosDaBike(b).includes(tamanho))
+      ? tamanho
+      : "";
 
   const heading = HEADINGS[condicao || "todas"];
 
@@ -71,14 +90,19 @@ export default async function CatalogoPage({ searchParams }) {
             <div className="flex flex-wrap gap-2">
               <FilterLink
                 label="Todas"
-                href={buildHref({ categoria, busca })}
+                href={buildHref({ categoria, busca, tamanho: tamanhoNaAba("", categoria) })}
                 active={!condicao}
               />
               {CONDITIONS.map((c) => (
                 <FilterLink
                   key={c.value}
                   label={c.value === "nova" ? "Novas" : "Seminovas"}
-                  href={buildHref({ categoria, busca, condicao: c.value })}
+                  href={buildHref({
+                    categoria,
+                    busca,
+                    condicao: c.value,
+                    tamanho: tamanhoNaAba(c.value, categoria),
+                  })}
                   active={condicao === c.value}
                   gold={c.value === "seminova"}
                 />
@@ -90,7 +114,7 @@ export default async function CatalogoPage({ searchParams }) {
             <div className="flex flex-wrap gap-2">
               <FilterLink
                 label="Todos os tipos"
-                href={buildHref({ condicao, busca })}
+                href={buildHref({ condicao, busca, tamanho: tamanhoNaAba(condicao, "") })}
                 active={!categoria}
                 subtle
               />
@@ -98,29 +122,45 @@ export default async function CatalogoPage({ searchParams }) {
                 <FilterLink
                   key={cat.value}
                   label={cat.label}
-                  href={buildHref({ condicao, busca, categoria: cat.value })}
+                  href={buildHref({
+                    condicao,
+                    busca,
+                    categoria: cat.value,
+                    tamanho: tamanhoNaAba(condicao, cat.value),
+                  })}
                   active={categoria === cat.value}
                   subtle
                 />
               ))}
             </div>
 
-            <form action="/catalogo" method="get" className="md:ml-auto">
-              {categoria && (
-                <input type="hidden" name="categoria" value={categoria} />
+            <div className="flex flex-col gap-3 md:ml-auto md:flex-row md:items-center">
+              {gruposDeTamanho.length > 0 && (
+                <FiltroTamanho
+                  grupos={gruposDeTamanho}
+                  tamanho={tamanho}
+                  filtros={{ condicao, categoria, busca }}
+                />
               )}
-              {condicao && (
-                <input type="hidden" name="condicao" value={condicao} />
-              )}
-              <input
-                type="search"
-                name="busca"
-                defaultValue={busca}
-                placeholder="Buscar bicicleta..."
-                aria-label="Buscar bicicleta"
-                className="h-10 w-full rounded-full border border-hairline bg-bone px-4 text-sm text-ink placeholder:text-stone focus:border-ink focus:outline-none md:w-64"
-              />
-            </form>
+
+              <form action="/catalogo" method="get">
+                {categoria && (
+                  <input type="hidden" name="categoria" value={categoria} />
+                )}
+                {condicao && (
+                  <input type="hidden" name="condicao" value={condicao} />
+                )}
+                {tamanho && <input type="hidden" name="tamanho" value={tamanho} />}
+                <input
+                  type="search"
+                  name="busca"
+                  defaultValue={busca}
+                  placeholder="Buscar bicicleta..."
+                  aria-label="Buscar bicicleta"
+                  className="h-10 w-full rounded-full border border-hairline bg-bone px-4 text-sm text-ink placeholder:text-stone focus:border-ink focus:outline-none md:w-64"
+                />
+              </form>
+            </div>
           </div>
         </section>
 
