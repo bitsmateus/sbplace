@@ -90,6 +90,8 @@ export default function BikeForm({ bike, initialFlash = "" }) {
   const [status, setStatus] = useState(bike?.status || (isEditing ? "disponivel" : "oculta"));
   const [featured, setFeatured] = useState(bike?.featured || false);
   const [inReview, setInReview] = useState(bike?.inReview || false);
+  const [blackFriday, setBlackFriday] = useState(bike?.blackFriday || false);
+  const [compareAt, setCompareAt] = useState(centsToInput(bike?.compareAtPriceCents));
   const [subtitle, setSubtitle] = useState(bike?.subtitle || "");
   const [description, setDescription] = useState(bike?.description || "");
   const [price, setPrice] = useState(centsToInput(bike?.priceCents));
@@ -124,9 +126,11 @@ export default function BikeForm({ bike, initialFlash = "" }) {
       status,
       featured,
       inReview,
+      blackFriday,
+      compareAtPriceCents: inputToCents(compareAt),
       images,
     }),
-    [name, category, condition, subtitle, price, cashPrice, installments, installmentValue, description, specs, status, featured, inReview, images]
+    [name, category, condition, subtitle, price, cashPrice, installments, installmentValue, description, specs, status, featured, inReview, blackFriday, compareAt, images]
   );
 
   // "sujo" = há alterações não salvas
@@ -427,6 +431,50 @@ export default function BikeForm({ bike, initialFlash = "" }) {
                   className={inputClass}
                 />
               </div>
+            </div>
+
+            <div className="mt-6 rounded-xl border border-line p-4">
+              <label className="flex min-h-11 cursor-pointer items-start gap-3 text-sm">
+                <input
+                  type="checkbox"
+                  checked={blackFriday}
+                  onChange={(e) => setBlackFriday(e.target.checked)}
+                  className="mt-0.5 h-5 w-5 shrink-0 rounded border-line accent-[#ffffff]"
+                />
+                <span>
+                  <span className="flex flex-wrap items-center gap-2 font-semibold text-paper">
+                    Participa da
+                    <span className="rounded-full border border-paper/30 bg-black px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-paper">
+                      Black Friday
+                    </span>
+                  </span>
+                  <span className="mt-1 block text-xs text-fog">
+                    Mostra o selo preto, o preço &quot;de&quot; riscado e coloca a bike na seção
+                    Black Friday da home. Quando a promoção acabar, desmarque e volte o preço.
+                  </span>
+                </span>
+              </label>
+              {blackFriday && (
+                <div className="mt-4">
+                  <label htmlFor="compareAt" className={labelClass}>
+                    Preço &quot;de&quot; — riscado (R$)
+                  </label>
+                  <input
+                    id="compareAt"
+                    type="text"
+                    inputMode="decimal"
+                    value={compareAt}
+                    onChange={(e) => setCompareAt(e.target.value)}
+                    placeholder="Preço cheio antes da promoção"
+                    className={inputClass}
+                  />
+                  <p className={hintClass}>
+                    {payload.compareAtPriceCents > payload.priceCents
+                      ? `No site: de ${formatPrice(payload.compareAtPriceCents)} por ${formatPrice(payload.priceCents)}`
+                      : "Precisa ser maior que o Preço acima para aparecer riscado."}
+                  </p>
+                </div>
+              )}
             </div>
 
             <div className="mt-6 rounded-xl border border-line p-4">

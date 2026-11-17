@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { formatPrice, CATEGORIES, STATUS, isInReview } from "@/lib/bike-constants";
+import { formatPrice, CATEGORIES, STATUS, isInReview, isBlackFriday, compareAtPrice } from "@/lib/bike-constants";
 import { uploadUrl } from "@/lib/uploads";
 
 const TABS = [
@@ -305,6 +305,11 @@ export default function BikesManager({ bikes }) {
                       >
                         {isUsed ? "Seminova" : "Nova"}
                       </span>
+                      {isBlackFriday(bike) && (
+                        <span className="rounded-full border border-paper/30 bg-black px-2 py-0.5 text-[10px] font-bold uppercase text-paper">
+                          Black Friday
+                        </span>
+                      )}
                       {isInReview(bike) && (
                         <span className="rounded-full bg-revisao px-2 py-0.5 text-[10px] font-bold uppercase text-paper">
                           Em revisão
@@ -317,6 +322,9 @@ export default function BikesManager({ bikes }) {
                 </Link>
 
                 <div>
+                  {isBlackFriday(bike) && compareAtPrice(bike) > 0 && (
+                    <p className="text-xs text-fog line-through">{formatPrice(compareAtPrice(bike))}</p>
+                  )}
                   <p className="text-lg font-semibold">{formatPrice(bike.priceCents)}</p>
                   {bike.cashPriceCents > 0 && (
                     <p className="text-xs text-fog">à vista {formatPrice(bike.cashPriceCents)}</p>
