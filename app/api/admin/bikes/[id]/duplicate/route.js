@@ -33,6 +33,8 @@ export async function POST(request, { params }) {
     subtitle: source.subtitle,
     priceCents: source.priceCents,
     cashPriceCents: source.cashPriceCents,
+    compareAtPriceCents: source.compareAtPriceCents,
+    blackFriday: source.blackFriday,
     installments: source.installments,
     installmentValueCents: source.installmentValueCents,
     description: source.description,
