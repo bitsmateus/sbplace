@@ -32,6 +32,8 @@ export async function POST(request) {
     status: data.status,
     featured: !!data.featured,
     inReview: !!data.inReview,
+    blackFriday: !!data.blackFriday,
+    compareAtPriceCents: Math.max(0, Math.round(Number(data.compareAtPriceCents) || 0)),
     images: Array.isArray(data.images) ? data.images : [],
     position: Number(data.position) || 0,
   });
