@@ -45,6 +45,11 @@ export async function PUT(request, { params }) {
     status: data.status,
     featured: data.featured !== undefined ? !!data.featured : undefined,
     inReview: data.inReview !== undefined ? !!data.inReview : undefined,
+    blackFriday: data.blackFriday !== undefined ? !!data.blackFriday : undefined,
+    compareAtPriceCents:
+      data.compareAtPriceCents !== undefined
+        ? Math.max(0, Math.round(Number(data.compareAtPriceCents) || 0))
+        : undefined,
     images: Array.isArray(data.images) ? data.images : undefined,
     position: data.position !== undefined ? Number(data.position) : undefined,
   });
