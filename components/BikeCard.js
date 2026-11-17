@@ -1,7 +1,15 @@
 import Link from "next/link";
-import { formatPrice, installmentText, CATEGORIES, isInReview } from "@/lib/bike-constants";
+import {
+  formatPrice,
+  installmentText,
+  CATEGORIES,
+  isInReview,
+  isBlackFriday,
+  compareAtPrice,
+} from "@/lib/bike-constants";
 import StatusBadge from "./StatusBadge";
 import RevisaoBadge from "./RevisaoBadge";
+import BlackFridayBadge from "./BlackFridayBadge";
 import BikePlaceholder from "./BikePlaceholder";
 import { uploadImage } from "@/lib/uploads";
 
@@ -45,6 +53,8 @@ export default function BikeCard({ bike, variant = "light", priority = false }) 
     CATEGORIES.find((c) => c.value === bike.category)?.label || bike.category;
   const isSold = bike.status === "vendida";
   const showStatus = bike.status && bike.status !== "disponivel";
+  const blackFriday = isBlackFriday(bike);
+  const oldPrice = blackFriday ? compareAtPrice(bike) : 0;
 
   return (
     <Link
@@ -71,6 +81,7 @@ export default function BikeCard({ bike, variant = "light", priority = false }) 
           <BikePlaceholder className={`h-full w-full p-10 ${v.placeholder}`} />
         )}
         <div className="absolute left-3 right-3 top-3 flex flex-wrap gap-2">
+          {blackFriday && <BlackFridayBadge />}
           {condition === "seminova" && (
             <span className="inline-block rounded-full bg-gold px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-ink">
               Seminova
@@ -86,7 +97,16 @@ export default function BikeCard({ bike, variant = "light", priority = false }) 
           {bike.name}
         </h3>
         <p className={`text-[15px] ${v.sub}`}>{bike.subtitle || categoryLabel}</p>
-        <p className={`mt-3 text-2xl font-semibold leading-none ${v.price}`}>
+        {oldPrice > 0 && (
+          <p className={`mt-3 text-sm line-through ${v.sub}`}>
+            <span className="sr-only">De </span>
+            {formatPrice(oldPrice)}
+          </p>
+        )}
+        <p
+          className={`${oldPrice > 0 ? "mt-1" : "mt-3"} text-2xl font-semibold leading-none ${v.price}`}
+        >
+          {oldPrice > 0 && <span className="sr-only">Por </span>}
           {formatPrice(bike.priceCents)}
         </p>
         <p className={`text-sm ${v.sub}`}>
