@@ -29,6 +29,8 @@ export default function HomePage() {
   const settings = getSettings();
   const novas = listBikes({ onlyPublic: true, condition: "nova" });
   const seminovas = listBikes({ onlyPublic: true, condition: "seminova" });
+  // Seção provisória: só aparece enquanto houver bike marcada como Black Friday.
+  const blackFriday = listBikes({ onlyPublic: true, blackFriday: true });
 
 
   const tiles = [
@@ -64,6 +66,7 @@ export default function HomePage() {
       <main className="flex-1">
         <Hero />
         <HistorySection />
+        {blackFriday.length > 0 && <BlackFridaySection bikes={blackFriday} />}
         <TypesSection tiles={tiles} />
         <NewBikesSection bikes={novas.slice(0, 4)} />
         <BikeFitSection />
@@ -177,6 +180,27 @@ function Hero() {
               Ver seminovas
             </Link>
           </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function BlackFridaySection({ bikes }) {
+  return (
+    <section id="black-friday" className="bg-black py-12 text-paper md:py-24">
+      <div className="container-page">
+        <SectionHead title="Black Friday Specialized" tone="dark">
+          <p className="max-w-lg text-base text-mist md:text-[17px]">
+            Preços especiais da Specialized por tempo limitado, enquanto durar a
+            promoção da marca. Em até 12x sem juros no cartão.
+          </p>
+        </SectionHead>
+
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:gap-6 lg:grid-cols-4">
+          {bikes.map((bike) => (
+            <BikeCard key={bike.id} bike={bike} variant="dark" />
+          ))}
         </div>
       </div>
     </section>
