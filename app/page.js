@@ -114,12 +114,12 @@ function Hero() {
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src="/hero.webp"
-          srcSet="/hero-800.webp 800w, /hero.webp 1672w"
+          srcSet="/hero-800.webp 800w, /hero.webp 1920w"
           sizes="100vw"
           width={1672}
           height={941}
           decoding="async"
-          alt="Mountain bike elétrica S-Works em frente à fachada da SB Place, revenda autorizada Specialized"
+          alt="Bike speed S-Works branca em frente à fachada da SB Place, revenda autorizada Specialized"
           fetchPriority="high"
           className="block aspect-video w-full object-cover lg:aspect-auto lg:h-full lg:object-contain lg:object-right"
         />
