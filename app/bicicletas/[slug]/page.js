@@ -5,13 +5,21 @@ import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";
 import StatusBadge from "@/components/StatusBadge";
 import RevisaoBadge from "@/components/RevisaoBadge";
+import BlackFridayBadge from "@/components/BlackFridayBadge";
 import BikeGallery from "@/components/BikeGallery";
 import BikeCard from "@/components/BikeCard";
 import PrazoEntrega from "@/components/PrazoEntrega";
 import BikeComprar from "@/components/BikeComprar";
 import { CorDaBikeProvider } from "@/components/CorDaBike";
 import { getBikeBySlug, listRelatedBikes } from "@/lib/bikes";
-import { formatPrice, installmentText, CATEGORIES, isInReview } from "@/lib/bike-constants";
+import {
+  formatPrice,
+  installmentText,
+  CATEGORIES,
+  isInReview,
+  isBlackFriday,
+  compareAtPrice,
+} from "@/lib/bike-constants";
 import { coresDoModelo } from "@/lib/cores-specialized";
 import { isRedeConfigured } from "@/lib/rede";
 
@@ -134,12 +142,18 @@ export default async function BikeDetailPage({ params }) {
               )}
               {showStatus && <StatusBadge status={bike.status} />}
               {isInReview(bike) && <RevisaoBadge />}
+              {isBlackFriday(bike) && <BlackFridayBadge />}
             </div>
 
             <h1 className="display mt-3 text-4xl text-ink md:text-5xl">{bike.name}</h1>
             {bike.subtitle && <p className="mt-3 text-lg text-stone">{bike.subtitle}</p>}
 
             <div className="mt-6 border-y border-hairline py-6">
+              {isBlackFriday(bike) && compareAtPrice(bike) > 0 && (
+                <p className="mb-2 text-lg text-stone">
+                  De <span className="line-through">{formatPrice(compareAtPrice(bike))}</span> por
+                </p>
+              )}
               <p className="text-4xl font-semibold leading-none text-ink">
                 {formatPrice(bike.priceCents)}
               </p>
