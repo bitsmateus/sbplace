@@ -36,6 +36,7 @@ COPY --from=builder /app/package.json ./package.json
 COPY --from=builder /app/next.config.mjs ./next.config.mjs
 COPY --from=builder /app/proxy.js ./proxy.js
 COPY --from=builder /app/jsconfig.json ./jsconfig.json
+COPY --from=builder /app/scripts ./scripts
 
 RUN mkdir -p /app/data/uploads && chown -R sbplace:sbplace /app/data
 
