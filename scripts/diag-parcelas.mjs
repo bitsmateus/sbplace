@@ -5,7 +5,7 @@ import fs from "node:fs";
 const path = process.argv[2] || process.env.DB_PATH || `${process.env.DATA_DIR || "/app/data"}/sbplace.json`;
 const { orders = [] } = JSON.parse(fs.readFileSync(path, "utf-8"));
 const brl = (c) => (Number(c || 0) / 100).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
-const lastMsg = (o) => [...(o.history || [])].reverse().find((h) => h.message)?.message || "";
+const lastMsg = (o) => [...(o.history || [])].reverse().find((h) => h.text)?.text || "";
 
 const row = (o) => ({
   pedido: o.id,
@@ -28,6 +28,12 @@ acima.length ? console.table(acima.map(row)) : console.log("Nenhum.");
 console.log("\n== Comparação: pedidos até 12x que passaram pela Rede (para checar valor mínimo/máximo) ==");
 const ate12 = orders.filter((o) => Number(o.installments) <= 12 && (o.payment?.returnCode || o.status !== "aguardando_pagamento"));
 console.table(ate12.map(row));
+
+console.log("\n== Histórico completo dos pedidos (passo a passo) ==");
+for (const o of orders) {
+  console.log(`\nPedido #${o.id} — ${o.installments}x de ${brl(o.installmentValueCents)} (total ${brl(o.amountCents)}) — ${o.status}`);
+  for (const h of o.history || []) console.log(`  ${String(h.at || "").slice(0, 19).replace("T", " ")}  [${h.status}]  ${h.text || ""}`);
+}
 
 console.log("\n== Resumo por returnCode ==");
 const resumo = {};
