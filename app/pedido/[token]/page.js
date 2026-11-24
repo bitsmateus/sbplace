@@ -5,7 +5,7 @@ import SiteFooter from "@/components/SiteFooter";
 import { getOrderByToken, orderCode } from "@/lib/orders";
 import { formatPrice } from "@/lib/bike-constants";
 import { whatsappLink } from "@/lib/site-config";
-import { refreshWaitingOrder } from "@/lib/checkout";
+import { installmentDeclineCustomerMessage, refreshWaitingOrder } from "@/lib/checkout";
 import AutoRefresh from "@/components/AutoRefresh";
 
 export const dynamic = "force-dynamic";
@@ -62,7 +62,11 @@ export default async function PedidoPage({ params }) {
                 : "Compra realizada"}
           </h1>
           <p className="mt-4 text-lg text-stone">
-            {stillWaiting && order.payment?.threeDSPendingSince ? MESSAGES.autenticando : MESSAGES[order.status]}
+            {stillWaiting && order.payment?.threeDSPendingSince
+              ? MESSAGES.autenticando
+              : order.status === "recusado" && order.payment?.declineReason === "parcelas"
+                ? installmentDeclineCustomerMessage(order.installments)
+                : MESSAGES[order.status]}
           </p>
           {stillWaiting && <AutoRefresh />}
 
