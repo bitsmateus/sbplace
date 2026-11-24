@@ -7,13 +7,17 @@ export const dynamic = "force-dynamic";
 // Para onde o banco devolve o cliente depois da autenticação 3D Secure (a Rede
 // pode chamar por GET ou POST). O resultado NÃO vem desta URL: o pedido é
 // conferido direto na Rede, e o cliente segue para a página do pedido.
+// `r` diz por qual URL o banco devolveu: "ok" (sucesso) ou "falha".
 async function handle(request) {
-  const token = new URL(request.url).searchParams.get("pedido") || "";
+  const params = new URL(request.url).searchParams;
+  const token = params.get("pedido") || "";
+  const r = params.get("r");
+  const bank = r === "ok" || r === "falha" ? r : "";
   const order = getOrderByToken(token);
   const origin = requestOrigin(request) || new URL(request.url).origin;
   if (!order) return NextResponse.redirect(`${origin}/`, 303);
 
-  await resolvePendingOrder(order.id);
+  await resolvePendingOrder(order.id, { bank });
   return NextResponse.redirect(`${origin}/pedido/${encodeURIComponent(order.token)}`, 303);
 }
 

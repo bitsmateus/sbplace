@@ -11,7 +11,7 @@ import {
   updateOrderDetails,
 } from "@/lib/orders";
 import { isValidCpf, isValidEmail, onlyDigits } from "@/lib/order-constants";
-import { findTransactionByReference } from "@/lib/rede";
+import { findTransaction } from "@/lib/rede";
 import { sendOrderNotification } from "@/lib/notifications";
 
 export const dynamic = "force-dynamic";
@@ -116,7 +116,11 @@ export async function PATCH(request, { params }) {
       if (order.status !== "verificar_pagamento" && order.status !== "aguardando_pagamento") {
         return NextResponse.json({ error: "Este pedido não precisa de conferência." }, { status: 400 });
       }
-      const found = await findTransactionByReference(orderCode(order));
+      // pelo TID (quando existe) e, se não achar, pela referência do pedido
+      let found = await findTransaction({ tid: order.payment?.tid, reference: orderCode(order) });
+      if (!found.error && !found.found && order.payment?.tid) {
+        found = await findTransaction({ reference: orderCode(order) });
+      }
       if (found.error) return NextResponse.json({ error: found.error }, { status: 502 });
       if (!found.found) {
         return NextResponse.json(
