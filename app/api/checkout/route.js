@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { getBikeBySlug } from "@/lib/bikes";
 import { installmentInfo } from "@/lib/bike-constants";
-import { MAX_ONLINE_INSTALLMENTS } from "@/lib/order-constants";
+import { allowedInstallments } from "@/lib/installments";
 import { reserveBikeAndCreateOrder } from "@/lib/orders";
 import { isRedeConfigured } from "@/lib/rede";
 import {
@@ -38,7 +38,7 @@ export async function POST(request) {
     return NextResponse.json({ error: "Esta bike é vendida somente na loja." }, { status: 400 });
   }
 
-  const maxInstallments = Math.min(installmentInfo(bike).count, MAX_ONLINE_INSTALLMENTS);
+  const maxInstallments = allowedInstallments(bike.priceCents, installmentInfo(bike).count);
   const valid = validate(data, { maxInstallments });
   if (valid.error) return NextResponse.json({ error: valid.error }, { status: 400 });
 

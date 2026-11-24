@@ -6,7 +6,7 @@ import CheckoutForm from "@/components/CheckoutForm";
 import RevisaoBadge from "@/components/RevisaoBadge";
 import { getBikeBySlug } from "@/lib/bikes";
 import { formatPrice, installmentInfo, isInReview } from "@/lib/bike-constants";
-import { MAX_ONLINE_INSTALLMENTS } from "@/lib/order-constants";
+import { allowedInstallments } from "@/lib/installments";
 import { isRedeConfigured } from "@/lib/rede";
 import { uploadUrl } from "@/lib/uploads";
 
@@ -27,7 +27,7 @@ export default async function ComprarPage({ params }) {
     isRedeConfigured() && (bike.condition || "nova") === "seminova" && bike.status === "disponivel" && bike.priceCents > 0;
   if (!canBuyOnline) redirect(`/bicicletas/${bike.slug}`);
 
-  const maxInstallments = Math.min(installmentInfo(bike).count, MAX_ONLINE_INSTALLMENTS);
+  const maxInstallments = allowedInstallments(bike.priceCents, installmentInfo(bike).count);
   const image = (bike.images || [])[0];
 
   return (

@@ -1,6 +1,7 @@
 import LinksManager from "@/components/admin/LinksManager";
 import { effectiveLink, listLinks } from "@/lib/links";
 import { isRedeConfigured } from "@/lib/rede";
+import { redeMaxInstallments } from "@/lib/installments";
 
 export const dynamic = "force-dynamic";
 
@@ -17,7 +18,7 @@ export default function LinksPage() {
         um pagamento só e, quando pago, aparece em Pedidos.
       </p>
       <div className="mt-8">
-        <LinksManager links={links} redeReady={isRedeConfigured()} />
+        <LinksManager links={links} redeReady={isRedeConfigured()} maxInstallments={redeMaxInstallments()} />
       </div>
     </div>
   );

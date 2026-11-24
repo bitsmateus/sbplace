@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { formatPrice } from "@/lib/bike-constants";
-import { LINK_STATUS, MAX_LINK_INSTALLMENTS } from "@/lib/link-status";
+import { LINK_STATUS } from "@/lib/link-status";
 import { formatPhone, onlyDigits } from "@/lib/order-constants";
 
 const inputClass =
@@ -121,12 +121,13 @@ function LinkRow({ link, onCancel, busy }) {
 }
 
 // Criação de links de pagamento manuais e lista dos já criados.
-export default function LinksManager({ links, redeReady }) {
+// maxInstallments: limite configurado em REDE_MAX_INSTALLMENTS (vem do servidor).
+export default function LinksManager({ links, redeReady, maxInstallments = 12 }) {
   const router = useRouter();
   const [form, setForm] = useState({
     description: "",
     amount: "",
-    maxInstallments: "12",
+    maxInstallments: String(Math.min(12, maxInstallments)),
     customerName: "",
     customerPhone: "",
     requireAddress: false,
@@ -244,7 +245,7 @@ export default function LinksManager({ links, redeReady }) {
           <label className="block text-xs text-fog">
             Parcelas (até)
             <select className={inputClass} value={form.maxInstallments} onChange={(e) => set("maxInstallments", e.target.value)}>
-              {Array.from({ length: MAX_LINK_INSTALLMENTS }, (_, i) => i + 1).map((n) => (
+              {Array.from({ length: maxInstallments }, (_, i) => i + 1).map((n) => (
                 <option key={n} value={n}>
                   {n === 1 ? "À vista (1x)" : `${n}x sem juros`}
                 </option>

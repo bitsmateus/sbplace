@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getLinkByToken, linkEffectiveStatus } from "@/lib/links";
 import { reserveLinkAndCreateOrder } from "@/lib/orders";
 import { isRedeConfigured } from "@/lib/rede";
+import { allowedInstallments } from "@/lib/installments";
 import {
   browserInfo,
   chargeOrder,
@@ -41,7 +42,7 @@ export async function POST(request, { params }) {
   }
 
   const valid = validate(data, {
-    maxInstallments: link.maxInstallments,
+    maxInstallments: allowedInstallments(link.amountCents, link.maxInstallments),
     requireAddress: link.requireAddress,
   });
   if (valid.error) return NextResponse.json({ error: valid.error }, { status: 400 });

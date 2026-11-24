@@ -5,6 +5,7 @@ import CheckoutForm from "@/components/CheckoutForm";
 import { getLinkByToken, linkEffectiveStatus } from "@/lib/links";
 import { formatPrice } from "@/lib/bike-constants";
 import { isRedeConfigured } from "@/lib/rede";
+import { allowedInstallments } from "@/lib/installments";
 import { whatsappLink } from "@/lib/site-config";
 
 export const dynamic = "force-dynamic";
@@ -29,6 +30,8 @@ export default async function PagarPage({ params }) {
   const status = linkEffectiveStatus(link);
   const online = isRedeConfigured();
   const available = status === "ativo" && online;
+  // o link guarda o limite combinado; o teto da configuração atual também vale
+  const maxInstallments = allowedInstallments(link.amountCents, link.maxInstallments);
   const help = whatsappLink(`Olá! Preciso de ajuda com o link de pagamento: ${link.description}`);
 
   return (
@@ -42,8 +45,8 @@ export default async function PagarPage({ params }) {
           <div className="mt-6 rounded-2xl border border-hairline bg-bone p-5">
             <p className="font-semibold text-ink">{link.description}</p>
             <p className="mt-1 text-3xl font-semibold text-ink">{formatPrice(link.amountCents)}</p>
-            {link.maxInstallments > 1 && (
-              <p className="mt-1 text-sm text-stone">Em até {link.maxInstallments}x sem juros no cartão de crédito.</p>
+            {maxInstallments > 1 && (
+              <p className="mt-1 text-sm text-stone">Em até {maxInstallments}x sem juros no cartão de crédito.</p>
             )}
           </div>
 
@@ -53,7 +56,7 @@ export default async function PagarPage({ params }) {
                 endpoint={`/api/pagar/${link.token}`}
                 requireAddress={link.requireAddress}
                 priceCents={link.amountCents}
-                maxInstallments={link.maxInstallments}
+                maxInstallments={maxInstallments}
                 prefill={{ name: link.customerName, phone: link.customerPhone }}
               />
             </div>
