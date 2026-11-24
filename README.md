@@ -42,6 +42,26 @@ Veja `.env.example`. As principais:
 | `NEXT_PUBLIC_INSTAGRAM` | @ do Instagram (sem o @) |
 | `NEXT_PUBLIC_ADDRESS` | Endereço mostrado no rodapé/contato |
 | `DATA_DIR` | Pasta onde ficam o banco (`sbplace.db`) e as fotos enviadas — em produção deve apontar para o volume persistente |
+| `REDE_PV`, `REDE_TOKEN`, `REDE_ENV` | Pagamento com cartão pela e.Rede (sem PV e token o checkout fica desligado) |
+| `REDE_MAX_INSTALLMENTS` | Máximo de parcelas no link de pagamento e no checkout das bikes. Padrão 12, teto 21 |
+| `REDE_MIN_INSTALLMENT_CENTS` | Valor mínimo de cada parcela, em centavos (ex.: `5000` = R$ 50,00). Vazio = sem mínimo |
+
+### Parcelamento no cartão (e.Rede)
+
+- O número de parcelas oferecido é o **menor** entre `REDE_MAX_INSTALLMENTS`,
+  o limite do link (escolhido ao criar) ou da bike (campo "Nº de parcelas";
+  seminova = 21 por padrão) e o que respeita `REDE_MIN_INSTALLMENT_CENTS`.
+  À vista (1x) sempre aparece. O servidor valida o mesmo limite.
+- Só suba `REDE_MAX_INSTALLMENTS` acima de 12 depois que a Rede confirmar que
+  o PV aceita esse parcelamento. Mudou a variável? Basta reiniciar o serviço.
+- Se a Rede recusar pelo número de parcelas, o cliente vê *"A operadora não
+  aceitou o pagamento em Nx… Tente em até 12x ou fale com a gente no
+  WhatsApp"* e o pedido registra o motivo no histórico.
+- Pagamentos com 3D Secure: quando o banco devolve o cliente, o site confere
+  na Rede (pelo TID) e grava no histórico do pedido o que a Rede respondeu.
+- Diagnóstico (só leitura, sem dados de cliente/cartão), no console do serviço:
+  `node scripts/diag-parcelas.mjs`. Teste no sandbox (recusa rodar fora dele):
+  `REDE_ENV=sandbox REDE_PV=… REDE_TOKEN=… node scripts/teste-sandbox.mjs 12 13 21`.
 
 ## Deploy no EasyPanel
 
