@@ -6,6 +6,7 @@ import { listBikes, CATEGORIES } from "@/lib/bikes";
 import { CONDITIONS } from "@/lib/bike-constants";
 import { normalizarTamanho, tamanhosDaBike, opcoesDeTamanho } from "@/lib/tamanhos";
 import FiltroTamanho from "@/components/FiltroTamanho";
+import FiltroOrdem from "@/components/FiltroOrdem";
 import { HowItWorksSection, TradeInSection } from "@/components/HomeExtras";
 
 export const dynamic = "force-dynamic";
@@ -29,12 +30,30 @@ const HEADINGS = {
   },
 };
 
-function buildHref({ categoria, condicao, tamanho, busca }) {
+// Ordens aceitas no parâmetro ?ordem= (o padrão é a ordem de destaques).
+const ORDENS_VALIDAS = ["menor-preco", "maior-preco"];
+
+// Ordena por preço sem mexer no desempate da ordem padrão. Bikes vendidas e
+// sem preço cadastrado ficam sempre no fim, para não poluir o topo da lista.
+function ordenarPorPreco(bikes, ordem) {
+  if (!ordem) return bikes;
+  const sinal = ordem === "maior-preco" ? -1 : 1;
+  const peso = (b) => (b.status === "vendida" ? 2 : (b.priceCents || 0) > 0 ? 0 : 1);
+  return [...bikes].sort((a, b) => {
+    const pa = peso(a);
+    const pb = peso(b);
+    if (pa !== pb) return pa - pb;
+    return sinal * ((a.priceCents || 0) - (b.priceCents || 0));
+  });
+}
+
+function buildHref({ categoria, condicao, tamanho, busca, ordem }) {
   const qs = new URLSearchParams();
   if (condicao) qs.set("condicao", condicao);
   if (categoria) qs.set("categoria", categoria);
   if (tamanho) qs.set("tamanho", tamanho);
   if (busca) qs.set("busca", busca);
+  if (ordem) qs.set("ordem", ordem);
   const str = qs.toString();
   return str ? `/catalogo?${str}` : "/catalogo";
 }
@@ -48,6 +67,7 @@ export default async function CatalogoPage({ searchParams }) {
     : "";
 
   const tamanho = normalizarTamanho(params?.tamanho);
+  const ordem = ORDENS_VALIDAS.includes(params?.ordem) ? params.ordem : "";
 
   // Uma leitura só do catálogo; condição, tipo e tamanho são filtrados aqui,
   // para também saber quais tamanhos existem em cada aba.
@@ -59,9 +79,12 @@ export default async function CatalogoPage({ searchParams }) {
         (!cond || (b.condition || "nova") === cond) && (!cat || b.category === cat)
     );
   const semTamanho = daAba(condicao, categoria);
-  const bikes = tamanho
-    ? semTamanho.filter((b) => tamanhosDaBike(b).includes(tamanho))
-    : semTamanho;
+  const bikes = ordenarPorPreco(
+    tamanho
+      ? semTamanho.filter((b) => tamanhosDaBike(b).includes(tamanho))
+      : semTamanho,
+    ordem
+  );
   const gruposDeTamanho = opcoesDeTamanho(semTamanho, tamanho);
   // Ao trocar de aba, o tamanho escolhido só continua se existir bike desse
   // tamanho lá — senão o cliente cairia numa lista vazia.
@@ -90,7 +113,7 @@ export default async function CatalogoPage({ searchParams }) {
             <div className="flex flex-wrap gap-2">
               <FilterLink
                 label="Todas"
-                href={buildHref({ categoria, busca, tamanho: tamanhoNaAba("", categoria) })}
+                href={buildHref({ categoria, busca, ordem, tamanho: tamanhoNaAba("", categoria) })}
                 active={!condicao}
               />
               {CONDITIONS.map((c) => (
@@ -100,6 +123,7 @@ export default async function CatalogoPage({ searchParams }) {
                   href={buildHref({
                     categoria,
                     busca,
+                    ordem,
                     condicao: c.value,
                     tamanho: tamanhoNaAba(c.value, categoria),
                   })}
@@ -114,7 +138,7 @@ export default async function CatalogoPage({ searchParams }) {
             <div className="flex flex-wrap gap-2">
               <FilterLink
                 label="Todos os tipos"
-                href={buildHref({ condicao, busca, tamanho: tamanhoNaAba(condicao, "") })}
+                href={buildHref({ condicao, busca, ordem, tamanho: tamanhoNaAba(condicao, "") })}
                 active={!categoria}
                 subtle
               />
@@ -125,6 +149,7 @@ export default async function CatalogoPage({ searchParams }) {
                   href={buildHref({
                     condicao,
                     busca,
+                    ordem,
                     categoria: cat.value,
                     tamanho: tamanhoNaAba(condicao, cat.value),
                   })}
@@ -139,9 +164,14 @@ export default async function CatalogoPage({ searchParams }) {
                 <FiltroTamanho
                   grupos={gruposDeTamanho}
                   tamanho={tamanho}
-                  filtros={{ condicao, categoria, busca }}
+                  filtros={{ condicao, categoria, busca, ordem }}
                 />
               )}
+
+              <FiltroOrdem
+                ordem={ordem}
+                filtros={{ condicao, categoria, tamanho, busca }}
+              />
 
               <form action="/catalogo" method="get">
                 {categoria && (
@@ -151,6 +181,7 @@ export default async function CatalogoPage({ searchParams }) {
                   <input type="hidden" name="condicao" value={condicao} />
                 )}
                 {tamanho && <input type="hidden" name="tamanho" value={tamanho} />}
+                {ordem && <input type="hidden" name="ordem" value={ordem} />}
                 <input
                   type="search"
                   name="busca"

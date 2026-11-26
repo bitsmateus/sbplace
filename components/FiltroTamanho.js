@@ -13,6 +13,7 @@ export default function FiltroTamanho({ grupos, tamanho, filtros }) {
     if (filtros?.categoria) qs.set("categoria", filtros.categoria);
     if (valor) qs.set("tamanho", valor);
     if (filtros?.busca) qs.set("busca", filtros.busca);
+    if (filtros?.ordem) qs.set("ordem", filtros.ordem);
     const str = qs.toString();
     router.push(str ? `/catalogo?${str}` : "/catalogo", { scroll: false });
   }
